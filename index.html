@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CocoLo - Aventures d'apprentissage</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background"></div>
+    <header class="app-header">
+        <h1>CocoLo</h1>
+        <p>Des missions ludiques pour Maxence et Corentin</p>
+    </header>
+
+    <main id="app">
+        <section id="welcome-screen" class="card">
+            <h2>Prépare ton aventure</h2>
+            <form id="player-form" class="form-grid">
+                <label class="input-group">
+                    <span>Ton prénom</span>
+                    <input type="text" id="player-name" placeholder="Maxence ou Corentin" required />
+                </label>
+
+                <label class="input-group">
+                    <span>Ton niveau scolaire</span>
+                    <div class="level-toggle">
+                        <input type="radio" id="level-cp" name="level" value="cp" checked />
+                        <label for="level-cp" class="toggle-option">CP</label>
+                        <input type="radio" id="level-ce2" name="level" value="ce2" />
+                        <label for="level-ce2" class="toggle-option">CE2</label>
+                    </div>
+                </label>
+
+                <div class="input-group">
+                    <span>Choisis ton avatar</span>
+                    <div id="avatar-choices" class="avatar-grid" role="radiogroup" aria-label="Choix d'avatar">
+                        <!-- Avatars insérés par JavaScript -->
+                    </div>
+                </div>
+
+                <button type="submit" class="cta">Commencer l'aventure</button>
+            </form>
+        </section>
+
+        <section id="menu-screen" class="card hidden">
+            <div class="player-badge">
+                <div class="player-avatar" id="selected-avatar"></div>
+                <div>
+                    <h2 id="player-greeting"></h2>
+                    <p id="player-level"></p>
+                </div>
+            </div>
+
+            <h3>Choisis un monde à explorer</h3>
+            <div id="module-list" class="module-grid">
+                <!-- Modules générés dynamiquement -->
+            </div>
+        </section>
+
+        <section id="module-screen" class="card hidden">
+            <button id="back-to-menu" class="ghost-btn">⬅ Retour</button>
+            <div class="module-header">
+                <div>
+                    <h2 id="module-title"></h2>
+                    <p id="module-description"></p>
+                </div>
+                <div class="reward-counter">
+                    <span>Récompenses</span>
+                    <div class="stars" id="module-rewards"></div>
+                </div>
+            </div>
+
+            <div id="activity-area" class="activity-area">
+                <!-- Activités générées dynamiquement -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>Conçu avec amour pour apprendre en s'amusant 💡</p>
+    </footer>
+
+    <template id="module-card-template">
+        <article class="module-card">
+            <div class="module-info">
+                <h4 class="module-name"></h4>
+                <p class="module-summary"></p>
+            </div>
+            <div class="module-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <span class="progress-label"></span>
+            </div>
+            <div class="module-reward-preview"></div>
+            <button class="module-start-btn">Lancer</button>
+        </article>
+    </template>
+
+    <template id="choice-button-template">
+        <button class="choice-btn"></button>
+    </template>
+
+    <script src="app.js" type="module"></script>
+</body>
+</html>
