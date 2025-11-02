@@ -1,0 +1,385 @@
+import sampleSize from '../utils/sampleSize'
+
+const baseAudioPath = '/sounds'
+
+const phonicsSyllables = [
+  { prompt: 'Quel son fait la lettre "m" ?', answer: 'mmm', feedback: 'Le son m fait humm comme dans maman.' },
+  { prompt: 'Quel son fait "ch" ?', answer: 'chhhh', feedback: 'Comme dans chocolat.' },
+  { prompt: 'Quel son fait la lettre "r" ?', answer: 'rrrr', feedback: 'C’est un son qui roule !' },
+  { prompt: 'Quel son fait "ou" ?', answer: 'ouuu', feedback: 'Comme dans hibou.' },
+  { prompt: 'Quel son fait la lettre "l" ?', answer: 'lll', feedback: 'On la prononce en collant la langue.' },
+  { prompt: 'Quel son fait "on" ?', answer: 'on', feedback: 'Comme dans bonbon.' },
+  { prompt: 'Quel son fait "ai" ?', answer: 'è', feedback: 'Comme dans maison.' },
+  { prompt: 'Quel son fait "eau" ?', answer: 'o', feedback: 'Comme dans bateau.' },
+  { prompt: 'Quel son fait "in" ?', answer: 'in', feedback: 'Comme dans lapin.' },
+  { prompt: 'Quel son fait "gn" ?', answer: 'gn', feedback: 'Comme dans montagne.' },
+]
+
+const syllablePairs = [
+  { prompt: 'Quelle syllabe complète le mot « ma__on » ?', answer: 'ison', choices: ['r', 'ison', 'to', 'pa'], feedback: 'maison se termine par ison.' },
+  { prompt: 'Choisis la syllabe qui complète « ca__ot »', answer: 'rot', choices: ['rou', 'rot', 'ra', 'ri'], feedback: 'car + rot = carotte.' },
+  { prompt: 'Complète « pi__re »', answer: 'er', choices: ['on', 'er', 'ar', 'or'], feedback: 'pierre s’écrit pi-er-re.' },
+  { prompt: 'Complète « so__ir »', answer: 'le', choices: ['le', 'li', 'lu', 'la'], feedback: 'sourire commence par sou et finit par rire.' },
+  { prompt: 'Complète « lun__ »', answer: 'ette', choices: ['ette', 'ine', 'oir', 'age'], feedback: 'lunette prend ette.' },
+  { prompt: 'Complète « po__on »', answer: 'iss', choices: ['iss', 'oss', 'uss', 'ass'], feedback: 'poisson prend iss.' },
+  { prompt: 'Complète « ba__on »', answer: 'ston', choices: ['ston', 'tron', 'crin', 'guit'], feedback: 'baston se termine par ston.' },
+  { prompt: 'Complète « cha__eu »', answer: 'p', choices: ['b', 'p', 'd', 't'], feedback: 'chapeau prend p.' },
+  { prompt: 'Complète « fa__eur »', answer: 'ct', choices: ['ct', 'rt', 'lt', 'st'], feedback: 'facteur prend ct.' },
+  { prompt: 'Complète « li__re »', answer: 'vr', choices: ['vr', 'gr', 'tr', 'dr'], feedback: 'livre se lit li-vre.' },
+]
+
+const comprehensionTexts = [
+  {
+    prompt: 'Lis : "Max part à la mer avec son frère. Ils jouent avec un ballon rouge." Que font Max et son frère ?',
+    answer: 'Ils jouent avec un ballon rouge',
+    choices: [
+      'Ils mangent une glace',
+      'Ils jouent avec un ballon rouge',
+      'Ils dorment sous un arbre',
+      'Ils regardent un film',
+    ],
+    feedback: 'Le texte dit qu’ils jouent avec un ballon rouge.',
+  },
+  {
+    prompt: 'Lis : "Corentin aime lire des histoires de dragons et de pirates." Que préfère lire Corentin ?',
+    answer: 'Des histoires de dragons et de pirates',
+    choices: [
+      'Des histoires d’astronautes',
+      'Des histoires de dragons et de pirates',
+      'Des recettes de cuisine',
+      'Des contes de fées',
+    ],
+    feedback: 'Le texte parle bien de dragons et de pirates.',
+  },
+  {
+    prompt: '"La maîtresse offre trois étoiles dorées aux élèves les plus attentifs." Que reçoit-on quand on est attentif ?',
+    answer: 'Trois étoiles dorées',
+    choices: ['Un cahier bleu', 'Trois étoiles dorées', 'Un ballon', 'Un bonbon'],
+    feedback: 'Les étoiles dorées récompensent l’attention.',
+  },
+  {
+    prompt: '"Le petit robot danse quand on lui met de la musique." Que fait le robot ?',
+    answer: 'Il danse',
+    choices: ['Il chante', 'Il danse', 'Il cuisine', 'Il lit'],
+    feedback: 'La phrase dit qu’il danse.',
+  },
+  {
+    prompt: '"La licorne magique adore se promener dans la forêt lumineuse." Où se promène la licorne ?',
+    answer: 'Dans la forêt lumineuse',
+    choices: ['Dans la mer', 'Dans la forêt lumineuse', 'Dans le désert', 'Dans la montagne'],
+    feedback: 'La forêt lumineuse est mentionnée dans le texte.',
+  },
+  {
+    prompt: '"Maxence a trois pommes, il en mange une. Combien lui en reste-t-il ?"',
+    answer: 'Deux',
+    choices: ['Une', 'Deux', 'Trois', 'Quatre'],
+    feedback: '3 - 1 = 2.',
+  },
+  {
+    prompt: '"Corentin prépare un spectacle. Il répète la chanson deux fois par jour." Que fait Corentin ?',
+    answer: 'Il prépare un spectacle',
+    choices: ['Il fait du sport', 'Il prépare un spectacle', 'Il construit un robot', 'Il jardine'],
+    feedback: 'Il répète pour un spectacle.',
+  },
+  {
+    prompt: '"Les deux frères observent les étoiles filantes allongés sur la pelouse." Où sont-ils ?',
+    answer: 'Sur la pelouse',
+    choices: ['Dans la maison', 'Sur la pelouse', 'Dans la voiture', 'Sur le bateau'],
+    feedback: 'Ils regardent le ciel depuis la pelouse.',
+  },
+  {
+    prompt: '"La maîtresse raconte une histoire drôle à la classe." Que fait la maîtresse ?',
+    answer: 'Elle raconte une histoire drôle',
+    choices: ['Elle dessine', 'Elle chante', 'Elle raconte une histoire drôle', 'Elle fait du sport'],
+    feedback: 'Elle raconte une histoire.',
+  },
+  {
+    prompt: '"Le pirate trouve un coffre rempli de pièces d’or." Que trouve le pirate ?',
+    answer: 'Un coffre rempli de pièces d’or',
+    choices: ['Un trésor de bonbons', 'Un coffre rempli de pièces d’or', 'Un livre de contes', 'Un bateau'],
+    feedback: 'Le coffre contient des pièces d’or.',
+  },
+]
+
+const readingQuestions = {
+  cp: [
+    ...phonicsSyllables,
+    ...syllablePairs,
+    ...comprehensionTexts,
+  ].map((item, index) => ({
+    ...item,
+    id: `lecture-cp-${index}`,
+    type: item.choices ? 'choice' : 'input',
+    audio: `${baseAudioPath}/lecture-${(index % 5) + 1}.mp3`,
+  })),
+  ce2: [
+    ...comprehensionTexts,
+    ...syllablePairs,
+    ...phonicsSyllables,
+  ]
+    .concat(
+      Array.from({ length: 15 }).map((_, idx) => ({
+        prompt: `Lis ce passage : "${['Le dragon bleu vole dans le ciel étoilé', 'La fusée fonce vers une nouvelle planète', 'La chouette observe la forêt endormie'][idx % 3]}". Que peut-on retenir ?`,
+        answer: ['Le dragon vole', 'La fusée fonce', 'La chouette observe'][idx % 3],
+        choices: ['Le dragon vole', 'La fusée fonce', 'La chouette observe', 'Le robot dort'],
+        feedback: 'Identifie la bonne information dans le texte.',
+        audio: `${baseAudioPath}/lecture-${(idx % 5) + 1}.mp3`,
+      }))
+    )
+    .map((item, index) => ({
+      ...item,
+      id: `lecture-ce2-${index}`,
+      type: 'choice',
+    })),
+}
+
+const writingWords = [
+  { prompt: 'Complète le mot : s_urire', answer: 'o', choices: ['o', 'e', 'a', 'i'], feedback: 'Sourire s’écrit avec un o.' },
+  { prompt: 'Complète : cha_peau', answer: 'p', choices: ['p', 'b', 'd', 't'], feedback: 'Chapeau prend p.' },
+  { prompt: 'Complète : lic_rne', answer: 'o', choices: ['o', 'u', 'i', 'a'], feedback: 'Licorne prend o.' },
+  { prompt: 'Complète : dra_on', answer: 'g', choices: ['g', 'j', 'q', 'z'], feedback: 'Dragon s’écrit avec g.' },
+  { prompt: 'Complète : pi_ure', answer: 'q', choices: ['g', 'q', 'k', 'c'], feedback: 'PiQure s’écrit avec q.' },
+  { prompt: 'Complète : mu_ique', answer: 's', choices: ['z', 's', 'c', 't'], feedback: 'Musique prend s.' },
+  { prompt: 'Complète : a_iver', answer: 'r', choices: ['r', 'l', 't', 'd'], feedback: 'Arriver avec deux r.' },
+  { prompt: 'Complète : car_osse', answer: 'r', choices: ['r', 'l', 't', 'd'], feedback: 'Carrosse avec rr.' },
+  { prompt: 'Complète : ma_on', answer: 'is', choices: ['is', 'ai', 'oi', 'eu'], feedback: 'Maison avec ai-son.' },
+  { prompt: 'Complète : or_age', answer: 'ang', choices: ['ang', 'ong', 'ing', 'eng'], feedback: 'Orange avec ange.' },
+]
+
+const dictationWords = [
+  { prompt: 'Écris le mot entendu : "magie"', answer: 'magie', feedback: 'Magie s’écrit m-a-g-i-e.' },
+  { prompt: 'Écris le mot entendu : "dragon"', answer: 'dragon', feedback: 'Dragon s’écrit d-r-a-g-o-n.' },
+  { prompt: 'Écris le mot entendu : "robot"', answer: 'robot', feedback: 'Robot se termine par -bot.' },
+  { prompt: 'Écris le mot entendu : "fusée"', answer: 'fusée', feedback: 'Fusée prend un accent aigu.', audio: `${baseAudioPath}/fusee.mp3` },
+  { prompt: 'Écris le mot entendu : "mystère"', answer: 'mystère', feedback: 'Mystère prend un y et un accent.', audio: `${baseAudioPath}/mystere.mp3` },
+  { prompt: 'Écris le mot entendu : "explorer"', answer: 'explorer', feedback: 'Explorer avec ex-plor-er.' },
+  { prompt: 'Écris le mot entendu : "forêt"', answer: 'forêt', feedback: 'Forêt prend un accent circonflexe.', audio: `${baseAudioPath}/foret.mp3` },
+  { prompt: 'Écris le mot entendu : "aventure"', answer: 'aventure', feedback: 'Aventure se termine en -ture.' },
+  { prompt: 'Écris le mot entendu : "planète"', answer: 'planète', feedback: 'Planète prend un accent.', audio: `${baseAudioPath}/planete.mp3` },
+  { prompt: 'Écris le mot entendu : "galaxie"', answer: 'galaxie', feedback: 'Galaxie s’écrit g-a-l-a-x-i-e.' },
+]
+
+const letterSorters = [
+  { prompt: 'Range les lettres pour former le mot « forêt »', answer: 'forêt', feedback: 'forêt', letters: ['o', 'f', 'r', 'ê', 't'] },
+  { prompt: 'Range les lettres pour former « étoile »', answer: 'étoile', feedback: 'étoile', letters: ['é', 't', 'o', 'i', 'l', 'e'] },
+  { prompt: 'Range les lettres pour former « robot »', answer: 'robot', feedback: 'robot', letters: ['r', 'o', 'b', 'o', 't'] },
+  { prompt: 'Range les lettres pour former « licorne »', answer: 'licorne', feedback: 'licorne', letters: ['l', 'i', 'c', 'o', 'r', 'n', 'e'] },
+  { prompt: 'Range les lettres pour former « dragon »', answer: 'dragon', feedback: 'dragon', letters: ['d', 'r', 'a', 'g', 'o', 'n'] },
+]
+
+const writingQuestions = {
+  cp: [
+    ...writingWords,
+    ...dictationWords,
+    ...letterSorters.map((item) => ({
+      ...item,
+      prompt: `${item.prompt} (écris ta réponse)`,
+    })),
+  ].map((item, index) => ({
+    ...item,
+    id: `ecriture-cp-${index}`,
+    type: item.choices ? 'choice' : 'input',
+    audio: item.audio ?? `${baseAudioPath}/dictée-${(index % 5) + 1}.mp3`,
+  })),
+  ce2: Array.from({ length: 30 }).map((_, index) => {
+    const base = writingWords[index % writingWords.length]
+    return {
+      ...base,
+      id: `ecriture-ce2-${index}`,
+      prompt: `${base.prompt} (niveau expert)`,
+      type: base.choices ? 'choice' : 'input',
+      audio: `${baseAudioPath}/ce2-dictee-${(index % 5) + 1}.mp3`,
+    }
+  }),
+}
+
+function generateAdditions(count) {
+  return Array.from({ length: count }).map((_, idx) => {
+    const a = 1 + ((idx * 3) % 9)
+    const b = 1 + ((idx * 5) % 9)
+    return {
+      id: `add-${idx}`,
+      prompt: `${a} + ${b} = ?`,
+      answer: `${a + b}`,
+      choices: sampleSize([a + b, a + b + 1, a + b - 1, a + b + 2], 4).map(String),
+      feedback: `${a} + ${b} = ${a + b}`,
+    }
+  })
+}
+
+function generateSubtractions(count) {
+  return Array.from({ length: count }).map((_, idx) => {
+    const a = 10 + idx
+    const b = 1 + (idx % 9)
+    return {
+      id: `sub-${idx}`,
+      prompt: `${a} - ${b} = ?`,
+      answer: `${a - b}`,
+      choices: sampleSize([a - b, a - b + 1, a - b - 1, a - b + 2], 4).map(String),
+      feedback: `${a} - ${b} = ${a - b}`,
+    }
+  })
+}
+
+function generateMultiplications(count) {
+  return Array.from({ length: count }).map((_, idx) => {
+    const a = 2 + (idx % 9)
+    const b = 2 + ((idx * 3) % 9)
+    return {
+      id: `mul-${idx}`,
+      prompt: `${a} × ${b} = ?`,
+      answer: `${a * b}`,
+      choices: sampleSize([a * b, a * b + a, a * b - b, a * b + b], 4).map(String),
+      feedback: `${a} × ${b} = ${a * b}`,
+    }
+  })
+}
+
+function generateDivisions(count) {
+  return Array.from({ length: count }).map((_, idx) => {
+    const b = 2 + (idx % 8)
+    const a = b * (2 + ((idx * 3) % 8))
+    return {
+      id: `div-${idx}`,
+      prompt: `${a} ÷ ${b} = ?`,
+      answer: `${a / b}`,
+      choices: sampleSize([a / b, a / b + 1, a / b - 1, a / b + 2], 4)
+        .map(Math.round)
+        .map(String),
+      feedback: `${a} ÷ ${b} = ${a / b}`,
+    }
+  })
+}
+
+const wordProblems = Array.from({ length: 25 }).map((_, idx) => {
+  const apples = 12 + idx
+  const eaten = 3 + (idx % 5)
+  const remaining = apples - eaten
+  return {
+    id: `problem-${idx}`,
+    prompt: `Max a ${apples} pommes et il en mange ${eaten}. Combien lui en reste-t-il ?`,
+    answer: `${remaining}`,
+    choices: sampleSize([remaining, remaining + 1, remaining + 2, remaining - 1], 4).map(String),
+    feedback: `Il reste ${remaining} pommes.`,
+    image: `/assets/problems/pomme-${(idx % 3) + 1}.svg`,
+  }
+})
+
+const mathQuestions = {
+  cp: [...generateAdditions(25), ...generateSubtractions(25)].map((item, index) => ({
+    ...item,
+    id: `math-cp-${index}`,
+    type: 'choice',
+    audio: `${baseAudioPath}/math-${(index % 5) + 1}.mp3`,
+  })),
+  ce2: [...generateMultiplications(25), ...generateDivisions(20), ...wordProblems].map((item, index) => ({
+    ...item,
+    id: `math-ce2-${index}`,
+    type: 'choice',
+    audio: `${baseAudioPath}/math-ce2-${(index % 5) + 1}.mp3`,
+  })),
+}
+
+const memoryCards = Array.from({ length: 24 }).map((_, index) => ({
+  id: `memory-${index}`,
+  prompt: `Retrouve la paire n°${index + 1}`,
+  answer: `pair-${Math.floor(index / 2)}`,
+  feedback: 'Observe bien les cartes pour mémoriser les paires.',
+}))
+
+const hangmanWords = Array.from({ length: 30 }).map((_, index) => {
+  const words = ['dragon', 'licorne', 'puzzle', 'galaxie', 'robotique', 'explorateur', 'mystère', 'aventure']
+  const word = words[index % words.length]
+  return {
+    id: `pendu-${index}`,
+    prompt: `Devine le mot mystère n°${index + 1}`,
+    answer: word,
+    feedback: `Le mot mystère était ${word}.`,
+  }
+})
+
+const puzzleLetters = Array.from({ length: 25 }).map((_, idx) => ({
+  id: `puzzle-${idx}`,
+  prompt: `Replace les lettres pour former le mot ${['étoile', 'cosmos', 'dragon', 'pluie', 'soleil'][idx % 5]}`,
+  answer: ['étoile', 'cosmos', 'dragon', 'pluie', 'soleil'][idx % 5],
+  feedback: 'Observe bien les lettres proposées.',
+}))
+
+export const bonusModules = {
+  memory: memoryCards,
+  hangman: hangmanWords,
+  puzzle: puzzleLetters,
+}
+
+export const learningModules = {
+  lecture: readingQuestions,
+  ecriture: writingQuestions,
+  mathematiques: mathQuestions,
+}
+
+export function getModuleQuestions(moduleId, level) {
+  if (learningModules[moduleId]) {
+    return learningModules[moduleId][level] ?? []
+  }
+  return bonusModules[moduleId] ?? []
+}
+
+export const moduleMeta = {
+  lecture: {
+    title: 'Lecture magique',
+    description: 'Sons, syllabes et petites histoires à écouter.',
+    icon: '📖',
+    background: 'theme-forest',
+  },
+  ecriture: {
+    title: 'Atelier d’écriture',
+    description: 'Complète les mots, fais des dictées sonores et classe les lettres.',
+    icon: '✍️',
+    background: 'theme-farm',
+  },
+  mathematiques: {
+    title: 'Défis mathématiques',
+    description: 'Additions, multiplications et problèmes rigolos.',
+    icon: '🧮',
+    background: 'theme-ocean',
+  },
+  memory: {
+    title: 'Jeu de mémoire',
+    description: 'Associe les cartes par paires.',
+    icon: '🧠',
+    background: 'theme-jungle',
+  },
+  hangman: {
+    title: 'Pendu rigolo',
+    description: 'Devine les mots mystères.',
+    icon: '🔤',
+    background: 'theme-space',
+  },
+  puzzle: {
+    title: 'Puzzle lettres & nombres',
+    description: 'Replace les lettres dans le bon ordre.',
+    icon: '🧩',
+    background: 'theme-farm',
+  },
+}
+
+export const challenges = [
+  {
+    id: 'vitesse',
+    title: 'Turbovite',
+    description: 'Répondre à 5 questions en moins de 10 secondes chacune.',
+    reward: 'Badge vitesse',
+  },
+  {
+    id: 'precision',
+    title: 'Œil de lynx',
+    description: 'Obtenir 10 bonnes réponses d’affilée.',
+    reward: 'Badge précision',
+  },
+  {
+    id: 'repetition',
+    title: 'Champion persévérant',
+    description: 'Rejouer le même module 3 fois.',
+    reward: 'Badge persévérance',
+  },
+]

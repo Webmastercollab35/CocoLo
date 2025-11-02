@@ -1,65 +1,125 @@
-# CocoLo – Application éducative gamifiée
+# Max&Co (Max Unkoe)
 
-CocoLo est une application web ludique pensée pour Maxence (CP) et Corentin (CE2). Elle propose des activités de lecture, d'écriture et de mathématiques avec suivi de progression, badges et tableau de scores. L'interface s'inspire de l'univers coloré de Lalilo et reste pleinement utilisable sur tablette.
+Max&Co est une aventure éducative React pensée pour Maxence (CP) et Corentin (CE2). L’application réunit onboarding ludique, carte de mondes à explorer, modules pédagogiques chronométrés et suivi de progression connecté à Supabase. L’interface s’inspire de l’univers Lalilo (couleurs douces, mascottes animées, boutons XXL) et reste 100 % responsive tablette/desktop.
 
 ## Fonctionnalités clés
 
-- **Inscription & connexion** avec choix d'avatar, niveau scolaire, âge et thème graphique.
-- **Modules pédagogiques** (lecture, écriture, mathématiques) adaptés automatiquement au niveau CP ou CE2.
-- **Activités chronométrées** (30 secondes par défaut) avec possibilité de répondre après l'échéance pour un score réduit.
-- **Accessibilité audio** : bouton "Écouter la question", synthèse vocale et effets sonores de réussite/erreur.
-- **Progression persistante** grâce à une base SQLite : scores, tentatives, temps de réponse et badges sont enregistrés.
-- **Tableau des scores** filtrable et **mode parent** pour suivre l'évolution des enfants.
-- **Thèmes visuels** (forêt, espace, océan), musique de fond activable et animations douces.
+- **Auth ludique** : inscription par prénom, âge, niveau (CP/CE2) et avatar; connexion rapide via prénom + avatar.
+- **Intégration Supabase** : profils, scores, temps, badges et défi « frère vs frère » stockés dans les tables `users` et `scores`.
+- **Carte gamifiée** : univers (forêt magique, espace, ferme, jungle…) avec déblocage progressif de zones et mascotte interactive.
+- **Modules pédagogiques** (lecture, écriture, mathématiques + bonus memory/pendu/puzzle) : 20 à 50 questions par niveau, chronomètre visuel (30 s), feedback audio et récompenses selon la rapidité.
+- **Sons & accessibilité** : Web Audio API + fichiers mp3 optionnels, boutons 🔊, musique de fond activable/désactivable.
+- **Suivi complet** : tableau de bord avec historique, badges, défis quotidiens, challenge Maxence vs Corentin et statistiques détaillées.
 
-## Installation
+## Prérequis
 
-> ℹ️ L'environnement de génération ne permet pas d'exécuter `npm install` (erreur 403). Les commandes ci-dessous fonctionnent sur un poste de développement standard avec un accès classique au registre npm.
+- Node.js ≥ 18
+- Un projet [Supabase](https://supabase.com/)
+
+## Mise en route
 
 ```bash
 npm install
 npm run dev
 ```
 
-Le serveur Express s'exécute par défaut sur [http://localhost:3000](http://localhost:3000).
+L’application démarre sur [http://localhost:5173](http://localhost:5173).
 
-## Scripts utiles
+## Configuration Supabase
 
-- `npm start` : lance le serveur en production.
-- `npm run dev` : lance le serveur avec les variables de développement.
-- `node scripts/generate-audio.js` : génère des fichiers mp3 (encouragement, succès, erreur) dans `public/assets/audio/` grâce à `lamejs`. Les activités utilisent ces sons s'ils sont présents, avec repli sur le Web Audio en cas d'absence.
+1. Créer un projet Supabase et récupérer la clé de service (`Project Settings > API > anon public`).
+2. Créer les tables suivantes (SQL simplifié) :
 
-## Structure principale
+   ```sql
+   create table users (
+     id uuid primary key default uuid_generate_v4(),
+     name text not null,
+     age int,
+     level text check (level in ('cp','ce2')),
+     avatar text,
+     created_at timestamptz default now()
+   );
+
+   create table scores (
+     id uuid primary key default uuid_generate_v4(),
+     user_id uuid references users(id) on delete cascade,
+     module text,
+     score int,
+     date timestamptz,
+     time_spent int,
+     streak int,
+     accuracy int,
+     speed int,
+     rewards jsonb,
+     created_at timestamptz default now()
+   );
+   ```
+
+3. Ajouter un fichier `.env.local` à la racine (non versionné) :
+
+   ```
+   VITE_SUPABASE_KEY=ta_clé_secrète
+   ```
+
+4. Le SDK Supabase est initialisé côté client dans `src/context/SupabaseContext.jsx` via :
+
+   ```js
+   import { createClient } from '@supabase/supabase-js'
+
+   const supabaseUrl = 'https://iwgayloevgnizzqmybcb.supabase.co'
+   const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
+   export const supabase = createClient(supabaseUrl, supabaseKey)
+   ```
+
+Les appels `signUp`, `login`, `saveScore`, `fetchSiblingRivalry` et `fetchUserScores` utilisent directement ce client.
+
+## Organisation du code
 
 ```
+├── index.html                 # Point d’entrée Vite + polices Google Fonts
+├── package.json               # Scripts (dev/build/preview) et dépendances
+├── postcss.config.cjs / tailwind.config.js
+├── src/
+│   ├── App.jsx                # Routes, thèmes dynamiques, mascotte
+│   ├── main.jsx               # Bootstrap React + providers
+│   ├── index.css              # Tailwind + utilitaires maison
+│   ├── context/
+│   │   ├── AudioContext.jsx   # Web Audio API, musique de fond, feedbacks
+│   │   └── SupabaseContext.jsx# Auth, scores, rivalité Maxence/Corentin
+│   ├── data/modules.js        # Banques de questions (20–50 items/module)
+│   ├── pages/                 # Landing, Profil, Carte, Modules, Dashboard, Résultats
+│   ├── components/            # Timer, carte, avatars, scoreboard, mascotte…
+│   ├── utils/sampleSize.js    # Générateur d’options pour questions mathématiques
+│   └── assets/                # SVG avatars (réutilisés depuis `public`)
 ├── public/
-│   ├── index.html        # Structure de l'application côté client
-│   ├── styles.css        # Thèmes, animations et responsive
-│   ├── app.js            # Logique des activités, timer, audio et appels API
-│   └── assets/
-│       ├── avatars/      # Avatars rigolos (svg)
-│       └── audio/        # Sons mp3 générés (optionnels)
-├── server.js             # API Express + endpoints REST
-├── db.js                 # Initialisation de la base SQLite
-├── scripts/generate-audio.js
-├── package.json
-└── README.md
+│   ├── assets/avatars/*.svg   # Avatars rigolos (licorne, dragon…)
+│   ├── assets/problems/*.svg  # Illustrations des problèmes mathématiques
+│   └── sounds/                # Placeholders – à remplacer par vos mp3
+└── vite.config.js
 ```
 
-## Base de données
+## Sons & animations
 
-- **users** : profil des enfants (prénom unique, âge, avatar, niveau, thème).
-- **sessions** : historique des connexions.
-- **activity_results** : scores par activité (module, niveau, temps, streak, détail des réponses).
-- **badges** : badges débloqués par enfant.
+- Les chemins audio pointent vers `public/sounds/*.mp3`. Ajoutez vos propres fichiers (`click.mp3`, `success.mp3`, `error.mp3`, `cheer.mp3`, `background.mp3`).
+- Le Web Audio API gère le fallback si un fichier manque.
+- Les animations (Framer Motion) dynamisent la landing, la mascotte et les transitions de pages.
 
-Le fichier SQLite `cocolo.db` est créé automatiquement au lancement du serveur.
+## Tests & scripts
 
-## Développement
+- `npm run dev` : démarre le serveur de dev Vite.
+- `npm run build` : build de production (`dist/`).
+- `npm run preview` : prévisualise le build.
 
-1. Lancer `npm run dev`.
-2. Ouvrir le navigateur sur `http://localhost:3000`.
-3. Utiliser l'inscription pour créer un enfant puis explorer les modules.
-4. Consulter le mode parent pour visualiser la progression comparée.
+## Étendre Max&Co
 
-Les activités reposent sur des données en mémoire côté client. L'ajout de nouveaux jeux se fait en étendant l'objet `MODULES` dans `public/app.js`.
+- Ajouter un nouveau module ? Créez vos questions dans `src/data/modules.js`, ajoutez une entrée `moduleMeta` et la carte se mettra à jour automatiquement.
+- Ajouter des défis parents ? Exploitez les hooks Supabase pour insérer des statistiques personnalisées.
+- Activer un mode hors-ligne ? Mettez en place `service workers` + cache des questions (structure prête pour y intégrer Workbox).
+
+## Licences & crédits
+
+- Illustrations SVG maison.
+- Polices [Fredoka](https://fonts.google.com/specimen/Fredoka) & [Nunito](https://fonts.google.com/specimen/Nunito).
+- Icônes : [Heroicons](https://heroicons.com/).
+
+Bon voyage dans la galaxie Max&Co ! 🚀
