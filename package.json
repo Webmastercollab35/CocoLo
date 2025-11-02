@@ -1,0 +1,26 @@
+{
+  "name": "cocolo",
+  "version": "1.0.0",
+  "description": "Application web éducative gamifiée pour enfants avec suivi de progression",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "keywords": [
+    "education",
+    "kids",
+    "games",
+    "ludique"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "lamejs": "^1.2.1",
+    "nanoid": "^5.0.7",
+    "sqlite": "^5.1.7",
+    "sqlite3": "^5.1.7"
+  }
+}

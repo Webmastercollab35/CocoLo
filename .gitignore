@@ -1,0 +1,4 @@
+node_modules/
+cocolo.db
+npm-debug.log*
+.DS_Store
