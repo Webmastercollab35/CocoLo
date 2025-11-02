@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply font-body text-midnight;
+}
+
+.button-primary {
+  @apply bg-ocean text-white font-semibold px-6 py-3 rounded-2xl shadow-lg shadow-sky-200 transition-transform transform hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-ocean/50;
+}
+
+.button-secondary {
+  @apply bg-white text-midnight font-semibold px-5 py-3 rounded-2xl shadow-inner shadow-slate-300 border-2 border-slate-100 hover:border-ocean transition;
+}
+
+.card-surface {
+  @apply bg-white/80 backdrop-blur-sm border border-white/60 rounded-3xl shadow-lg shadow-slate-200;
+}
+
+.badge-chip {
+  @apply inline-flex items-center gap-2 rounded-full px-4 py-1 text-sm font-semibold bg-gradient-to-r from-candy to-sunshine text-white shadow-md;
+}
+
+.theme-forest {
+  @apply bg-gradient-to-br from-green-100 via-emerald-50 to-emerald-200;
+}
+
+.theme-space {
+  @apply bg-gradient-to-br from-slate-800 via-indigo-900 to-indigo-700 text-white;
+}
+
+.theme-farm {
+  @apply bg-gradient-to-br from-orange-100 via-yellow-50 to-amber-200;
+}
+
+.theme-ocean {
+  @apply bg-gradient-to-br from-sky-100 via-sky-50 to-sky-200;
+}
+
+.theme-jungle {
+  @apply bg-gradient-to-br from-lime-100 via-green-100 to-emerald-200;
+}
