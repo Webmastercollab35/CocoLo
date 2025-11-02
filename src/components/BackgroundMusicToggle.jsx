@@ -1,11 +1,11 @@
-import { MusicalNoteIcon, SpeakerWaveIcon } from '@heroicons/react/24/solid'
 import { useAudio } from '../context/AudioContext'
 
 function Icon({ enabled }) {
-  if (enabled) {
-    return <SpeakerWaveIcon className="h-6 w-6" />
-  }
-  return <MusicalNoteIcon className="h-6 w-6" />
+  return (
+    <span aria-hidden="true" className="text-lg">
+      {enabled ? '🔊' : '🎵'}
+    </span>
+  )
 }
 
 export function BackgroundMusicToggle() {
