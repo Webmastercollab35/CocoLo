@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CocoLo - Aventures éducatives</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&family=Fredoka:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="theme-background" aria-hidden="true">
+      <div class="bg-shape bg-1"></div>
+      <div class="bg-shape bg-2"></div>
+      <div class="bg-shape bg-3"></div>
+    </div>
+    <header class="app-header">
+      <div class="logo-area">
+        <span class="mascot" aria-hidden="true">🌟</span>
+        <div>
+          <h1>CocoLo</h1>
+          <p>Aventures d'apprentissage pour Maxence &amp; Corentin</p>
+        </div>
+      </div>
+      <div class="music-toggle">
+        <button id="music-toggle" aria-pressed="false" class="ghost-btn">🎵 Musique</button>
+      </div>
+    </header>
+
+    <main id="app" class="app-shell">
+      <section id="auth-section" class="panel">
+        <div class="forms-wrapper">
+          <form id="signup-form" class="card" aria-labelledby="signup-title">
+            <h2 id="signup-title">Inscription</h2>
+            <p class="form-hint">Crée ton profil pour sauvegarder tes étoiles.</p>
+            <label class="input-group">
+              <span>Prénom</span>
+              <input type="text" name="name" autocomplete="off" required />
+            </label>
+            <label class="input-group">
+              <span>Âge</span>
+              <input type="number" name="age" min="5" max="10" required />
+            </label>
+            <label class="input-group">
+              <span>Niveau scolaire</span>
+              <select name="level" required>
+                <option value="cp">CP</option>
+                <option value="ce2">CE2</option>
+              </select>
+            </label>
+            <fieldset class="avatar-picker">
+              <legend>Choisis ton avatar</legend>
+              <div class="avatar-grid" id="signup-avatars"></div>
+            </fieldset>
+            <fieldset class="theme-picker">
+              <legend>Choisis ton univers</legend>
+              <label class="theme-chip">
+                <input type="radio" name="theme" value="foret" checked />
+                <span>Forêt magique</span>
+              </label>
+              <label class="theme-chip">
+                <input type="radio" name="theme" value="espace" />
+                <span>Cosmos</span>
+              </label>
+              <label class="theme-chip">
+                <input type="radio" name="theme" value="ocean" />
+                <span>Océan</span>
+              </label>
+            </fieldset>
+            <button class="cta" type="submit">Je m'inscris</button>
+            <p class="form-feedback" id="signup-feedback" role="status"></p>
+          </form>
+
+          <form id="login-form" class="card" aria-labelledby="login-title">
+            <h2 id="login-title">Connexion</h2>
+            <p class="form-hint">Reviens dans ton monde en un clin d'œil.</p>
+            <label class="input-group">
+              <span>Prénom</span>
+              <input type="text" name="name" autocomplete="off" required />
+            </label>
+            <fieldset class="avatar-picker">
+              <legend>Ton avatar</legend>
+              <div class="avatar-grid" id="login-avatars"></div>
+            </fieldset>
+            <button class="ghost-btn" type="submit">Je me connecte</button>
+            <p class="form-feedback" id="login-feedback" role="status"></p>
+          </form>
+        </div>
+      </section>
+
+      <section id="dashboard" class="panel hidden" aria-live="polite">
+        <div class="dashboard-header">
+          <div class="player-card">
+            <img id="player-avatar" alt="Avatar sélectionné" />
+            <div>
+              <h2 id="player-name"></h2>
+              <p id="player-level"></p>
+              <p id="player-score"></p>
+            </div>
+          </div>
+          <div class="dashboard-actions">
+            <label class="theme-selector">
+              <span>Thème</span>
+              <select id="theme-switcher">
+                <option value="foret">Forêt magique</option>
+                <option value="espace">Cosmos</option>
+                <option value="ocean">Océan</option>
+              </select>
+            </label>
+            <button id="parent-mode" class="ghost-btn">👨‍👩‍👧 Mode parent</button>
+            <button id="logout" class="ghost-btn">🚪 Déconnexion</button>
+          </div>
+        </div>
+
+        <div class="progress-area">
+          <article class="progress-card">
+            <h3>Badges débloqués</h3>
+            <div id="badge-list" class="badge-list"></div>
+          </article>
+          <article class="progress-card">
+            <h3>Résumé</h3>
+            <ul id="progress-summary" class="summary-list"></ul>
+          </article>
+        </div>
+
+        <section class="module-section">
+          <header class="section-header">
+            <h3>Choisis ton module</h3>
+            <div class="progress-bars" id="module-progress"></div>
+          </header>
+          <div class="module-grid" id="module-grid"></div>
+        </section>
+
+        <section id="activity-section" class="activity-shell hidden" aria-live="polite">
+          <header class="activity-header">
+            <button id="close-activity" class="ghost-btn">⬅ Retour</button>
+            <div>
+              <h3 id="activity-title"></h3>
+              <p id="activity-description"></p>
+            </div>
+            <div class="timer" id="activity-timer" role="timer" aria-live="assertive">
+              <svg viewBox="0 0 36 36">
+                <path class="timer-bg" d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831" />
+                <path class="timer-progress" id="timer-progress" d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831" />
+              </svg>
+              <span id="timer-label">30s</span>
+            </div>
+          </header>
+          <div id="activity-container" class="activity-container"></div>
+          <footer class="activity-footer">
+            <button id="retry-activity" class="ghost-btn">🔁 Recommencer</button>
+            <div class="reward-tracker">
+              <span>Étoiles</span>
+              <div id="activity-stars" class="stars"></div>
+            </div>
+          </footer>
+        </section>
+
+        <section class="scores-section">
+          <header class="section-header">
+            <h3>Tableau des scores</h3>
+            <div class="score-filters">
+              <select id="score-module-filter">
+                <option value="">Tous les modules</option>
+              </select>
+              <select id="score-level-filter">
+                <option value="">Tous les niveaux</option>
+              </select>
+            </div>
+          </header>
+          <table class="score-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Module</th>
+                <th>Niveau</th>
+                <th>Score</th>
+                <th>Temps</th>
+                <th>Streak</th>
+              </tr>
+            </thead>
+            <tbody id="score-body"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <section id="parent-dashboard" class="panel hidden" aria-live="polite">
+        <header class="section-header">
+          <h2>Vue parents</h2>
+          <button id="close-parent" class="ghost-btn">Fermer</button>
+        </header>
+        <p class="section-hint">
+          Surveille les progrès de Maxence et Corentin. Trie par module ou par niveau pour comparer.
+        </p>
+        <div class="score-filters">
+          <select id="parent-module-filter">
+            <option value="">Tous les modules</option>
+          </select>
+          <select id="parent-level-filter">
+            <option value="">Tous les niveaux</option>
+          </select>
+        </div>
+        <table class="score-table">
+          <thead>
+            <tr>
+              <th>Enfant</th>
+              <th>Module</th>
+              <th>Niveau</th>
+              <th>Meilleur score</th>
+              <th>Dernière session</th>
+            </tr>
+          </thead>
+          <tbody id="parent-score-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <template id="activity-template">
+      <article class="activity-card">
+        <header>
+          <h4 class="activity-question"></h4>
+          <button class="audio-btn" type="button">🔊 Écouter la question</button>
+        </header>
+        <div class="activity-body"></div>
+        <footer class="activity-actions">
+          <button class="ghost-btn activity-skip">Passer</button>
+          <button class="cta activity-submit">Valider</button>
+        </footer>
+      </article>
+    </template>
+
+    <template id="badge-template">
+      <div class="badge">
+        <span class="badge-icon">🏅</span>
+        <div>
+          <p class="badge-title"></p>
+          <span class="badge-date"></span>
+        </div>
+      </div>
+    </template>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
