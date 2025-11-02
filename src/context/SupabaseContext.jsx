@@ -1,6 +1,56 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { isSupabaseConfigured, supabase } from '../client'
 
+const LEVEL_LABELS = {
+  cp: 'CP',
+  ce1: 'CE1',
+  ce2: 'CE2',
+  cm1: 'CM1',
+  cm2: 'CM2',
+}
+
+const DEFAULT_LEVEL = 'cp'
+
+const UPPERCASE_TO_CODE = Object.entries(LEVEL_LABELS).reduce((acc, [code, label]) => {
+  acc[label.toUpperCase()] = code
+  return acc
+}, {})
+
+export function normalizeLevel(value) {
+  if (value === undefined || value === null) {
+    return DEFAULT_LEVEL
+  }
+  const raw = value.toString().trim()
+  if (!raw) return DEFAULT_LEVEL
+  const lower = raw.toLowerCase()
+  if (LEVEL_LABELS[lower]) {
+    return lower
+  }
+  const upper = raw.toUpperCase()
+  if (UPPERCASE_TO_CODE[upper]) {
+    return UPPERCASE_TO_CODE[upper]
+  }
+  return DEFAULT_LEVEL
+}
+
+export function formatLevelForSupabase(value) {
+  const normalized = normalizeLevel(value)
+  return LEVEL_LABELS[normalized] ?? LEVEL_LABELS[DEFAULT_LEVEL]
+}
+
+export function getLevelLabel(value) {
+  const normalized = normalizeLevel(value)
+  return LEVEL_LABELS[normalized] ?? LEVEL_LABELS[DEFAULT_LEVEL]
+}
+
+const normalizeUserRecord = (record) => {
+  if (!record) return null
+  return {
+    ...record,
+    level: normalizeLevel(record.level),
+  }
+}
+
 const SupabaseContext = createContext(null)
 
 export function SupabaseProvider({ children }) {
@@ -32,15 +82,16 @@ export function SupabaseProvider({ children }) {
         .insert({
           name: payload.name,
           age: payload.age,
-          level: payload.level,
+          level: formatLevelForSupabase(payload.level),
           avatar: payload.avatar,
         })
         .select()
         .single()
 
       if (upsertError) throw upsertError
-      setCurrentUser(data)
-      return data
+      const normalizedUser = normalizeUserRecord(data)
+      setCurrentUser(normalizedUser)
+      return normalizedUser
     } catch (err) {
       setError(err)
       throw err
@@ -69,8 +120,9 @@ export function SupabaseProvider({ children }) {
       if (!data) {
         throw new Error('Profil introuvable, vérifie ton avatar ou inscris-toi !')
       }
-      setCurrentUser(data)
-      return data
+      const normalizedUser = normalizeUserRecord(data)
+      setCurrentUser(normalizedUser)
+      return normalizedUser
     } catch (err) {
       setError(err)
       throw err
@@ -118,7 +170,8 @@ export function SupabaseProvider({ children }) {
       return
     }
 
-    const userIds = users.map((user) => user.id)
+    const normalizedUsers = (users ?? []).map(normalizeUserRecord)
+    const userIds = normalizedUsers.map((user) => user.id)
     if (!userIds.length) {
       setRivalry([])
       return
@@ -134,8 +187,8 @@ export function SupabaseProvider({ children }) {
       return
     }
 
-    const grouped = users.map((user) => {
-      const userScores = results.filter((score) => score.user_id === user.id)
+    const grouped = normalizedUsers.map((user) => {
+      const userScores = (results ?? []).filter((score) => score.user_id === user.id)
       const total = userScores.reduce((acc, score) => acc + (score.score ?? 0), 0)
       const best = userScores.reduce((max, score) => Math.max(max, score.score ?? 0), 0)
       return {

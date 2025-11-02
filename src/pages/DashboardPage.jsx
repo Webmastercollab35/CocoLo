@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import ScoreBoard from '../components/ScoreBoard'
 import ProgressBar from '../components/ProgressBar'
-import { useSupabase } from '../context/SupabaseContext'
+import { useSupabase, getLevelLabel } from '../context/SupabaseContext'
 import { moduleMeta, challenges } from '../data/modules'
 
 function StatCard({ title, value, description }) {
@@ -34,7 +34,7 @@ function RivalryPanel({ rivalry }) {
               <img src={`/assets/avatars/${entry.user.avatar}.svg`} alt={entry.user.name} className="h-14 w-14" />
               <div>
                 <p className="text-lg font-semibold text-midnight">{entry.user.name}</p>
-                <p className="text-xs uppercase text-slate-400">{entry.user.level?.toUpperCase()}</p>
+                <p className="text-xs uppercase text-slate-400">{getLevelLabel(entry.user.level)}</p>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-3 text-center text-sm font-semibold text-slate-600">
