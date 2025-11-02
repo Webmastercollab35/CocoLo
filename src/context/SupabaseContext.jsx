@@ -1,9 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = 'https://iwgayloevgnizzqmybcb.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { isSupabaseConfigured, supabase } from '../client'
 
 const SupabaseContext = createContext(null)
 
@@ -14,7 +10,20 @@ export function SupabaseProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  const ensureConfigured = useCallback(() => {
+    if (isSupabaseConfigured) return null
+    const configurationError = new Error(
+      "Supabase n'est pas configuré. Ajoute SUPABASE_KEY (ou VITE_SUPABASE_KEY) pour activer la sauvegarde."
+    )
+    setError(configurationError)
+    return configurationError
+  }, [])
+
   const signUp = useCallback(async (payload) => {
+    const configurationError = ensureConfigured()
+    if (configurationError) {
+      throw configurationError
+    }
     setLoading(true)
     setError(null)
     try {
@@ -38,9 +47,13 @@ export function SupabaseProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [ensureConfigured])
 
   const login = useCallback(async ({ name, avatar }) => {
+    const configurationError = ensureConfigured()
+    if (configurationError) {
+      throw configurationError
+    }
     setLoading(true)
     setError(null)
     try {
@@ -64,7 +77,7 @@ export function SupabaseProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [ensureConfigured])
 
   const logout = useCallback(() => {
     setCurrentUser(null)
@@ -73,6 +86,9 @@ export function SupabaseProvider({ children }) {
 
   const fetchUserScores = useCallback(async (userId) => {
     if (!userId) return
+    if (!isSupabaseConfigured) {
+      return
+    }
     const { data, error: fetchError } = await supabase
       .from('scores')
       .select('*')
@@ -88,6 +104,10 @@ export function SupabaseProvider({ children }) {
   }, [])
 
   const fetchSiblingRivalry = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setRivalry([])
+      return
+    }
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, name, avatar, level')
@@ -131,6 +151,10 @@ export function SupabaseProvider({ children }) {
 
   const saveScore = useCallback(async (scorePayload) => {
     if (!currentUser) return
+    const configurationError = ensureConfigured()
+    if (configurationError) {
+      throw configurationError
+    }
     const { data, error: insertError } = await supabase
       .from('scores')
       .insert({
@@ -154,11 +178,25 @@ export function SupabaseProvider({ children }) {
 
     setScores((prev) => [data, ...prev])
     return data
-  }, [currentUser])
+  }, [currentUser, ensureConfigured])
 
   const value = useMemo(
     () => ({
       supabase,
+      currentUser,
+      scores,
+      rivalry,
+      loading,
+      error,
+      supabaseReady: isSupabaseConfigured,
+      signUp,
+      login,
+      logout,
+      fetchUserScores,
+      saveScore,
+      fetchSiblingRivalry,
+    }),
+    [
       currentUser,
       scores,
       rivalry,
@@ -170,15 +208,8 @@ export function SupabaseProvider({ children }) {
       fetchUserScores,
       saveScore,
       fetchSiblingRivalry,
-    }),
-    [currentUser, scores, rivalry, loading, error, signUp, login, logout, fetchUserScores, saveScore, fetchSiblingRivalry]
+    ]
   )
-
-  useEffect(() => {
-    if (!supabaseKey) {
-      console.warn('Supabase key manquante : ajoutez VITE_SUPABASE_KEY dans .env.local')
-    }
-  }, [])
 
   return <SupabaseContext.Provider value={value}>{children}</SupabaseContext.Provider>
 }
