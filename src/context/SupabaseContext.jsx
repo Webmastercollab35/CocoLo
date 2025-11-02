@@ -1,9 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = 'https://iwgayloevgnizzqmybcb.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { supabase } from '../client'
 
 const SupabaseContext = createContext(null)
 
@@ -173,12 +169,6 @@ export function SupabaseProvider({ children }) {
     }),
     [currentUser, scores, rivalry, loading, error, signUp, login, logout, fetchUserScores, saveScore, fetchSiblingRivalry]
   )
-
-  useEffect(() => {
-    if (!supabaseKey) {
-      console.warn('Supabase key manquante : ajoutez VITE_SUPABASE_KEY dans .env.local')
-    }
-  }, [])
 
   return <SupabaseContext.Provider value={value}>{children}</SupabaseContext.Provider>
 }
