@@ -13,8 +13,10 @@ function QuestionCard({
   timerKey,
   onTimerEnd,
   level,
+  timeLimit = 45,
 }) {
   const { playSound, narrate, stopNarration, isNarrating } = useAudio()
+  const friendlyLevel = level ? level.toUpperCase() : 'Aventure'
 
   useEffect(() => {
     stopNarration()
@@ -82,13 +84,13 @@ function QuestionCard({
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="comic-label text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Niveau {level.toUpperCase()}
+            Niveau {friendlyLevel}
           </p>
           <h2 className="font-display text-2xl text-ocean drop-shadow-sm md:text-3xl">
             {question.prompt}
           </h2>
         </div>
-        <CountdownTimer duration={30} running={!showCorrection} keySeed={timerKey} onExpire={onTimerEnd} />
+        <CountdownTimer duration={timeLimit} running={!showCorrection} keySeed={timerKey} onExpire={onTimerEnd} />
       </div>
       <button
         type="button"
@@ -145,7 +147,7 @@ function QuestionCard({
           </div>
           <div className="pirate-build-area flex flex-wrap items-center gap-2 rounded-2xl p-3 text-lg font-semibold text-midnight shadow-inner">
             {selectedTiles.length === 0 ? (
-              <span className="text-sm font-normal text-slate-500">Clique sur les lettres pour écrire le mot.</span>
+              <span className="text-sm font-normal text-slate-500">Clique ou tapote sur les lettres pour écrire le mot.</span>
             ) : (
               selectedTiles.map((tile) => (
                 <button

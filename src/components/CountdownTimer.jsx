@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import classNames from 'classnames'
 
-function CountdownTimer({ duration = 30, running, onExpire, keySeed }) {
+function CountdownTimer({ duration = 45, running, onExpire, keySeed }) {
   const [time, setTime] = useState(duration)
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function CountdownTimer({ duration = 30, running, onExpire, keySeed }) {
   const ringClass = classNames('h-14 w-14 rounded-full border-4 flex items-center justify-center text-lg font-bold', {
     'border-emerald-400 text-emerald-500': progress > 60,
     'border-amber-400 text-amber-500': progress <= 60 && progress > 25,
-    'border-rose-500 text-rose-500 animate-pulse': progress <= 25,
+    'border-rose-500 text-rose-500': progress <= 25,
   })
 
   return (
@@ -43,7 +43,7 @@ function CountdownTimer({ duration = 30, running, onExpire, keySeed }) {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <p className="text-xs font-semibold text-slate-500">Réponds vite pour marquer plus de points !</p>
+      <p className="text-xs font-semibold text-slate-500">Prends ton temps, tu as {duration} secondes.</p>
     </div>
   )
 }
