@@ -2,17 +2,225 @@ import sampleSize from '../utils/sampleSize'
 
 const baseAudioPath = '/sounds'
 
-const phonicsSyllables = [
-  { prompt: 'Quel son fait la lettre "m" ?', answer: 'mmm', feedback: 'Le son m fait humm comme dans maman.' },
-  { prompt: 'Quel son fait "ch" ?', answer: 'chhhh', feedback: 'Comme dans chocolat.' },
-  { prompt: 'Quel son fait la lettre "r" ?', answer: 'rrrr', feedback: 'C’est un son qui roule !' },
-  { prompt: 'Quel son fait "ou" ?', answer: 'ouuu', feedback: 'Comme dans hibou.' },
-  { prompt: 'Quel son fait la lettre "l" ?', answer: 'lll', feedback: 'On la prononce en collant la langue.' },
-  { prompt: 'Quel son fait "on" ?', answer: 'on', feedback: 'Comme dans bonbon.' },
-  { prompt: 'Quel son fait "ai" ?', answer: 'è', feedback: 'Comme dans maison.' },
-  { prompt: 'Quel son fait "eau" ?', answer: 'o', feedback: 'Comme dans bateau.' },
-  { prompt: 'Quel son fait "in" ?', answer: 'in', feedback: 'Comme dans lapin.' },
-  { prompt: 'Quel son fait "gn" ?', answer: 'gn', feedback: 'Comme dans montagne.' },
+function shuffle(array) {
+  const copy = [...array]
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1))
+    const temp = copy[index]
+    copy[index] = copy[randomIndex]
+    copy[randomIndex] = temp
+  }
+  return copy
+}
+
+function createTileWord(word, extras = []) {
+  const letters = [...word.replace(/\s/g, '')]
+  const pool = shuffle([...letters, ...extras])
+  return pool.map((letter, index) => ({
+    id: `${word}-tile-${index}`,
+    label: letter,
+  }))
+}
+
+const cpLetterIslands = [
+  {
+    id: 'cp-tiles-mer',
+    prompt: 'Compose « mer » avec les pièces-lettres.',
+    answer: 'mer',
+    feedback: 'M-E-R, la mer qui entoure le bateau.',
+    type: 'tiles',
+    tiles: createTileWord('mer', ['a', 'u', 'i']),
+    audio: `${baseAudioPath}/pirate-mer.mp3`,
+  },
+  {
+    id: 'cp-tiles-voile',
+    prompt: 'Clique les lettres pour écrire « voile »',
+    answer: 'voile',
+    feedback: 'V-O-I-L-E, la grande voile blanche.',
+    type: 'tiles',
+    tiles: createTileWord('voile', ['a', 'u', 'n']),
+    audio: `${baseAudioPath}/pirate-voile.mp3`,
+  },
+  {
+    id: 'cp-tiles-ile',
+    prompt: 'Reconstitue « île » pour trouver la cachette.',
+    answer: 'île',
+    feedback: 'Île prend un accent sur le i.',
+    type: 'tiles',
+    tiles: createTileWord('île', ['a', 'o', 'u']),
+    audio: `${baseAudioPath}/pirate-ile.mp3`,
+  },
+  {
+    id: 'cp-tiles-bateau',
+    prompt: 'Assemble le mot « bateau »',
+    answer: 'bateau',
+    feedback: 'B-A-T-E-A-U, le bateau des aventuriers.',
+    type: 'tiles',
+    tiles: createTileWord('bateau', ['i', 'n', 'r']),
+    audio: `${baseAudioPath}/pirate-bateau.mp3`,
+  },
+  {
+    id: 'cp-tiles-coffre',
+    prompt: 'Forme « coffre » lettre par lettre.',
+    answer: 'coffre',
+    feedback: 'C-O-F-F-R-E garde le trésor.',
+    type: 'tiles',
+    tiles: createTileWord('coffre', ['a', 'u', 'n']),
+    audio: `${baseAudioPath}/pirate-coffre.mp3`,
+  },
+  {
+    id: 'cp-tiles-trace',
+    prompt: 'Écris « trace » en cliquant sur les pièces.',
+    answer: 'trace',
+    feedback: 'T-R-A-C-E comme la trace au sol.',
+    type: 'tiles',
+    tiles: createTileWord('trace', ['o', 'u', 'n']),
+    audio: `${baseAudioPath}/pirate-trace.mp3`,
+  },
+  {
+    id: 'cp-tiles-mousse',
+    prompt: 'Compose « mousse » avec la souris.',
+    answer: 'mousse',
+    feedback: 'M-O-U-S-S-E, le mousse du navire.',
+    type: 'tiles',
+    tiles: createTileWord('mousse', ['a', 'i', 'é']),
+    audio: `${baseAudioPath}/pirate-mousse.mp3`,
+  },
+  {
+    id: 'cp-tiles-perroquet',
+    prompt: 'Clique les lettres pour écrire « perroquet »',
+    answer: 'perroquet',
+    feedback: 'P-E-R-R-O-Q-U-E-T, le perroquet du capitaine.',
+    type: 'tiles',
+    tiles: createTileWord('perroquet', ['a', 'n', 'i']),
+    audio: `${baseAudioPath}/pirate-perroquet.mp3`,
+  },
+  {
+    id: 'cp-tiles-pirate',
+    prompt: 'Forme « pirate » pour lever l’ancre.',
+    answer: 'pirate',
+    feedback: 'P-I-R-A-T-E comme un vrai corsaire.',
+    type: 'tiles',
+    tiles: createTileWord('pirate', ['o', 'n', 'l']),
+    audio: `${baseAudioPath}/pirate-pirate.mp3`,
+  },
+  {
+    id: 'cp-tiles-tresor',
+    prompt: 'Compose « trésor » pour ouvrir le coffre.',
+    answer: 'trésor',
+    feedback: 'T-R-É-S-O-R pour gagner des pièces.',
+    type: 'tiles',
+    tiles: createTileWord('trésor', ['a', 'u', 'n']),
+    audio: `${baseAudioPath}/pirate-tresor.mp3`,
+  },
+]
+
+const cpKeyboardVoyages = [
+  {
+    id: 'cp-input-mer',
+    prompt: 'Tape le mot entendu : « mer »',
+    answer: 'mer',
+    feedback: 'M-E-R, bravo moussaillon !',
+    type: 'input',
+    audio: `${baseAudioPath}/pirate-mer.mp3`,
+  },
+  {
+    id: 'cp-input-or',
+    prompt: 'Écris le mot chuchoté par le coffre : « or »',
+    answer: 'or',
+    feedback: 'Deux lettres pour beaucoup de pièces.',
+    type: 'input',
+    audio: `${baseAudioPath}/pirate-or.mp3`,
+  },
+  {
+    id: 'cp-input-lune',
+    prompt: 'Tape « lune » comme la sirène.',
+    answer: 'lune',
+    feedback: 'L-U-N-E illumine la nuit.',
+    type: 'input',
+    audio: `${baseAudioPath}/pirate-lune.mp3`,
+  },
+  {
+    id: 'cp-input-mat',
+    prompt: 'Écris « mat » pour dresser la voile.',
+    answer: 'mat',
+    feedback: 'M-A-T tient la voile.',
+    type: 'input',
+    audio: `${baseAudioPath}/pirate-mat.mp3`,
+  },
+]
+
+const cpSoundRoutes = [
+  {
+    id: 'cp-choice-bateau',
+    prompt: 'Quelle lettre commence le mot « bateau » ?',
+    answer: 'b',
+    choices: ['b', 'm', 't', 'p'],
+    feedback: 'B comme bateau bleu.',
+  },
+  {
+    id: 'cp-choice-pirate',
+    prompt: 'Quelle lettre entend-on au début de « pirate » ?',
+    answer: 'p',
+    choices: ['p', 's', 'c', 'r'],
+    feedback: 'P comme perroquet.',
+  },
+  {
+    id: 'cp-choice-coffre',
+    prompt: 'Choisis la syllabe qui termine « co__ » pour dire coffre.',
+    answer: 'ffre',
+    choices: ['ffre', 'lion', 'ment', 'ron'],
+    feedback: 'Coffre se finit par f-f-r-e.',
+  },
+  {
+    id: 'cp-choice-mer',
+    prompt: 'Quelle syllabe complète « ma__on » pour dire maison ?',
+    answer: 'ison',
+    choices: ['ison', 'rin', 'ton', 'pon'],
+    feedback: 'Maison se termine par i-s-o-n.',
+  },
+  {
+    id: 'cp-choice-tr',
+    prompt: 'Choisis la lettre qui manque : « t_esor »',
+    answer: 'r',
+    choices: ['r', 'l', 'm', 'n'],
+    feedback: 'Trésor prend un R après le T.',
+  },
+]
+
+const ce2ListeningStories = [
+  {
+    id: 'ce2-son-boussole',
+    prompt: 'Recopie le mot dicté : « boussole »',
+    answer: 'boussole',
+    feedback: 'Boussole aide à trouver le nord.',
+    type: 'input',
+    audio: `${baseAudioPath}/ce2-boussole.mp3`,
+  },
+  {
+    id: 'ce2-son-explorateur',
+    prompt: 'Écris le mot entendu : « explorateur »',
+    answer: 'explorateur',
+    feedback: 'Explorateur part à l’aventure.',
+    type: 'input',
+    audio: `${baseAudioPath}/ce2-explorateur.mp3`,
+  },
+  {
+    id: 'ce2-son-etoile',
+    prompt: 'Tape le mot : « étoile »',
+    answer: 'étoile',
+    feedback: 'Étoile guide le navire de nuit.',
+    type: 'input',
+    audio: `${baseAudioPath}/pirate-etoile.mp3`,
+  },
+  {
+    id: 'ce2-son-cartographe',
+    prompt: 'Écris « cartographe »',
+    answer: 'cartographe',
+    feedback: 'Cartographe dessine les cartes.',
+    type: 'input',
+    audio: `${baseAudioPath}/ce2-cartographe.mp3`,
+  },
 ]
 
 const syllablePairs = [
@@ -26,6 +234,33 @@ const syllablePairs = [
   { prompt: 'Complète « cha__eu »', answer: 'p', choices: ['b', 'p', 'd', 't'], feedback: 'chapeau prend p.' },
   { prompt: 'Complète « fa__eur »', answer: 'ct', choices: ['ct', 'rt', 'lt', 'st'], feedback: 'facteur prend ct.' },
   { prompt: 'Complète « li__re »', answer: 'vr', choices: ['vr', 'gr', 'tr', 'dr'], feedback: 'livre se lit li-vre.' },
+]
+
+const pirateTileAdventures = [
+  {
+    id: 'pirate-tiles-sable',
+    prompt: 'Clique sur les lettres pour écrire « sable »',
+    answer: 'sable',
+    feedback: 'Le sable doré cache parfois des trésors.',
+    type: 'tiles',
+    tiles: createTileWord('sable', ['u', 'i', 'o']),
+  },
+  {
+    id: 'pirate-tiles-canon',
+    prompt: 'Compose le mot « canon »',
+    answer: 'canon',
+    feedback: 'Canon se compose de C-A-N-O-N.',
+    type: 'tiles',
+    tiles: createTileWord('canon', ['e', 'i', 'r']),
+  },
+  {
+    id: 'pirate-tiles-ancres',
+    prompt: 'Assemble « ancre » pour jeter le grappin.',
+    answer: 'ancre',
+    feedback: 'A-N-C-R-E retient le navire.',
+    type: 'tiles',
+    tiles: createTileWord('ancre', ['o', 'u', 'l']),
+  },
 ]
 
 const comprehensionTexts = [
@@ -103,19 +338,21 @@ const comprehensionTexts = [
 
 const readingQuestions = {
   cp: [
-    ...phonicsSyllables,
-    ...syllablePairs,
-    ...comprehensionTexts,
+    ...cpLetterIslands,
+    ...cpSoundRoutes,
+    ...cpKeyboardVoyages,
+    ...pirateTileAdventures,
+    ...comprehensionTexts.slice(0, 5),
   ].map((item, index) => ({
     ...item,
-    id: `lecture-cp-${index}`,
-    type: item.choices ? 'choice' : 'input',
-    audio: `${baseAudioPath}/lecture-${(index % 5) + 1}.mp3`,
+    id: item.id ?? `lecture-cp-${index}`,
+    type: item.type ?? (item.choices ? 'choice' : 'input'),
+    audio: item.audio ?? `${baseAudioPath}/lecture-${(index % 5) + 1}.mp3`,
   })),
   ce2: [
     ...comprehensionTexts,
     ...syllablePairs,
-    ...phonicsSyllables,
+    ...ce2ListeningStories,
   ]
     .concat(
       Array.from({ length: 15 }).map((_, idx) => ({
@@ -134,52 +371,75 @@ const readingQuestions = {
 }
 
 const writingWords = [
-  { prompt: 'Complète le mot : s_urire', answer: 'o', choices: ['o', 'e', 'a', 'i'], feedback: 'Sourire s’écrit avec un o.' },
-  { prompt: 'Complète : cha_peau', answer: 'p', choices: ['p', 'b', 'd', 't'], feedback: 'Chapeau prend p.' },
-  { prompt: 'Complète : lic_rne', answer: 'o', choices: ['o', 'u', 'i', 'a'], feedback: 'Licorne prend o.' },
-  { prompt: 'Complète : dra_on', answer: 'g', choices: ['g', 'j', 'q', 'z'], feedback: 'Dragon s’écrit avec g.' },
-  { prompt: 'Complète : pi_ure', answer: 'q', choices: ['g', 'q', 'k', 'c'], feedback: 'PiQure s’écrit avec q.' },
-  { prompt: 'Complète : mu_ique', answer: 's', choices: ['z', 's', 'c', 't'], feedback: 'Musique prend s.' },
-  { prompt: 'Complète : a_iver', answer: 'r', choices: ['r', 'l', 't', 'd'], feedback: 'Arriver avec deux r.' },
-  { prompt: 'Complète : car_osse', answer: 'r', choices: ['r', 'l', 't', 'd'], feedback: 'Carrosse avec rr.' },
-  { prompt: 'Complète : ma_on', answer: 'is', choices: ['is', 'ai', 'oi', 'eu'], feedback: 'Maison avec ai-son.' },
-  { prompt: 'Complète : or_age', answer: 'ang', choices: ['ang', 'ong', 'ing', 'eng'], feedback: 'Orange avec ange.' },
+  { prompt: 'Complète : ba_eau', answer: 't', choices: ['t', 'm', 'p', 's'], feedback: 'Bateau prend la lettre T au milieu.' },
+  { prompt: 'Complète : coff_e', answer: 'r', choices: ['r', 't', 'd', 'p'], feedback: 'Coffre se termine par R-E.' },
+  { prompt: 'Complète : pi_rate', answer: 'r', choices: ['r', 'l', 'm', 'n'], feedback: 'Pirate garde la lettre R après PI.' },
+  { prompt: 'Complète : an_re', answer: 'c', choices: ['c', 's', 't', 'p'], feedback: 'Ancre prend la lettre C.' },
+  { prompt: 'Complète : sir_ne', answer: 'è', choices: ['è', 'é', 'e', 'a'], feedback: 'Sirène s’écrit avec È.' },
+  { prompt: 'Complète : mous_e', answer: 's', choices: ['s', 'z', 'c', 't'], feedback: 'Mousse contient deux S.' },
+  { prompt: 'Complète : vo_le', answer: 'i', choices: ['i', 'u', 'o', 'a'], feedback: 'Voile prend la voyelle I.' },
+  { prompt: 'Complète : tr_sor', answer: 'é', choices: ['é', 'a', 'o', 'u'], feedback: 'Trésor possède un É.' },
 ]
 
 const dictationWords = [
-  { prompt: 'Écris le mot entendu : "magie"', answer: 'magie', feedback: 'Magie s’écrit m-a-g-i-e.' },
-  { prompt: 'Écris le mot entendu : "dragon"', answer: 'dragon', feedback: 'Dragon s’écrit d-r-a-g-o-n.' },
-  { prompt: 'Écris le mot entendu : "robot"', answer: 'robot', feedback: 'Robot se termine par -bot.' },
-  { prompt: 'Écris le mot entendu : "fusée"', answer: 'fusée', feedback: 'Fusée prend un accent aigu.', audio: `${baseAudioPath}/fusee.mp3` },
-  { prompt: 'Écris le mot entendu : "mystère"', answer: 'mystère', feedback: 'Mystère prend un y et un accent.', audio: `${baseAudioPath}/mystere.mp3` },
-  { prompt: 'Écris le mot entendu : "explorer"', answer: 'explorer', feedback: 'Explorer avec ex-plor-er.' },
-  { prompt: 'Écris le mot entendu : "forêt"', answer: 'forêt', feedback: 'Forêt prend un accent circonflexe.', audio: `${baseAudioPath}/foret.mp3` },
-  { prompt: 'Écris le mot entendu : "aventure"', answer: 'aventure', feedback: 'Aventure se termine en -ture.' },
-  { prompt: 'Écris le mot entendu : "planète"', answer: 'planète', feedback: 'Planète prend un accent.', audio: `${baseAudioPath}/planete.mp3` },
-  { prompt: 'Écris le mot entendu : "galaxie"', answer: 'galaxie', feedback: 'Galaxie s’écrit g-a-l-a-x-i-e.' },
+  { prompt: 'Écris le mot entendu : « mer »', answer: 'mer', feedback: 'M-E-R.', audio: `${baseAudioPath}/pirate-mer.mp3` },
+  { prompt: 'Écris le mot entendu : « voile »', answer: 'voile', feedback: 'V-O-I-L-E.', audio: `${baseAudioPath}/pirate-voile.mp3` },
+  { prompt: 'Écris le mot entendu : « pirate »', answer: 'pirate', feedback: 'P-I-R-A-T-E.', audio: `${baseAudioPath}/pirate-pirate.mp3` },
+  { prompt: 'Écris le mot entendu : « trésor »', answer: 'trésor', feedback: 'T-R-É-S-O-R.', audio: `${baseAudioPath}/pirate-tresor.mp3` },
+  { prompt: 'Écris le mot entendu : « bateau »', answer: 'bateau', feedback: 'B-A-T-E-A-U.' },
+  { prompt: 'Écris le mot entendu : « perle »', answer: 'perle', feedback: 'P-E-R-L-E.' },
+  { prompt: 'Écris le mot entendu : « lune »', answer: 'lune', feedback: 'L-U-N-E.' },
+  { prompt: 'Écris le mot entendu : « mat »', answer: 'mat', feedback: 'M-A-T.' },
 ]
 
-const letterSorters = [
-  { prompt: 'Range les lettres pour former le mot « forêt »', answer: 'forêt', feedback: 'forêt', letters: ['o', 'f', 'r', 'ê', 't'] },
-  { prompt: 'Range les lettres pour former « étoile »', answer: 'étoile', feedback: 'étoile', letters: ['é', 't', 'o', 'i', 'l', 'e'] },
-  { prompt: 'Range les lettres pour former « robot »', answer: 'robot', feedback: 'robot', letters: ['r', 'o', 'b', 'o', 't'] },
-  { prompt: 'Range les lettres pour former « licorne »', answer: 'licorne', feedback: 'licorne', letters: ['l', 'i', 'c', 'o', 'r', 'n', 'e'] },
-  { prompt: 'Range les lettres pour former « dragon »', answer: 'dragon', feedback: 'dragon', letters: ['d', 'r', 'a', 'g', 'o', 'n'] },
+const pirateLetterMaps = [
+  {
+    prompt: 'Clique les lettres pour former « perle »',
+    answer: 'perle',
+    feedback: 'Les perles brillent dans le trésor.',
+    type: 'tiles',
+    tiles: createTileWord('perle', ['a', 'u', 'i']),
+  },
+  {
+    prompt: 'Assemble « sabre » pour t’entraîner.',
+    answer: 'sabre',
+    feedback: 'S-A-B-R-E comme le sabre du capitaine.',
+    type: 'tiles',
+    tiles: createTileWord('sabre', ['o', 'u', 'n']),
+  },
+  {
+    prompt: 'Forme « navire » avec ta souris.',
+    answer: 'navire',
+    feedback: 'Le navire emmène toute l’équipe.',
+    type: 'tiles',
+    tiles: createTileWord('navire', ['e', 'o', 'u']),
+  },
+  {
+    prompt: 'Reconstitue « capitaine » lettre par lettre.',
+    answer: 'capitaine',
+    feedback: 'C-A-P-I-T-A-I-N-E guide l’équipage.',
+    type: 'tiles',
+    tiles: createTileWord('capitaine', ['o', 'u', 's']),
+  },
+  {
+    prompt: 'Compose « mousse » pour aider le bateau.',
+    answer: 'mousse',
+    feedback: 'Le mousse aide le capitaine sur le pont.',
+    type: 'tiles',
+    tiles: createTileWord('mousse', ['a', 'i', 'u']),
+  },
 ]
 
 const writingQuestions = {
   cp: [
     ...writingWords,
     ...dictationWords,
-    ...letterSorters.map((item) => ({
-      ...item,
-      prompt: `${item.prompt} (écris ta réponse)`,
-    })),
+    ...pirateLetterMaps,
   ].map((item, index) => ({
     ...item,
-    id: `ecriture-cp-${index}`,
-    type: item.choices ? 'choice' : 'input',
-    audio: item.audio ?? `${baseAudioPath}/dictée-${(index % 5) + 1}.mp3`,
+    id: item.id ?? `ecriture-cp-${index}`,
+    type: item.type ?? (item.choices ? 'choice' : 'input'),
+    audio: item.audio ?? `${baseAudioPath}/dictee-${(index % 5) + 1}.mp3`,
   })),
   ce2: Array.from({ length: 30 }).map((_, index) => {
     const base = writingWords[index % writingWords.length]
@@ -326,60 +586,75 @@ export function getModuleQuestions(moduleId, level) {
 
 export const moduleMeta = {
   lecture: {
-    title: 'Lecture magique',
-    description: 'Sons, syllabes et petites histoires à écouter.',
-    icon: '📖',
-    background: 'theme-forest',
+    title: 'Lecture des Moussaillons',
+    description: 'Déchiffre les messages pirates et les histoires chantées.',
+    icon: '🏴‍☠️',
+    background: 'theme-pirate-bay',
   },
   ecriture: {
-    title: 'Atelier d’écriture',
-    description: 'Complète les mots, fais des dictées sonores et classe les lettres.',
-    icon: '✍️',
-    background: 'theme-farm',
+    title: 'Atelier des Corsaires',
+    description: 'Compose les mots au clavier ou avec les pièces-lettres magiques.',
+    icon: '🪶',
+    background: 'theme-coral-lagoon',
   },
   mathematiques: {
-    title: 'Défis mathématiques',
-    description: 'Additions, multiplications et problèmes rigolos.',
-    icon: '🧮',
-    background: 'theme-ocean',
+    title: 'Compas des Maths',
+    description: 'Résous les calculs pour garder le navire dans la bonne direction.',
+    icon: '🧭',
+    background: 'theme-treasure-cove',
   },
   memory: {
-    title: 'Jeu de mémoire',
-    description: 'Associe les cartes par paires.',
-    icon: '🧠',
-    background: 'theme-jungle',
+    title: 'Mémory Pirate',
+    description: 'Retrouve les paires de cartes au trésor.',
+    icon: '🪙',
+    background: 'theme-coral-lagoon',
   },
   hangman: {
-    title: 'Pendu rigolo',
-    description: 'Devine les mots mystères.',
-    icon: '🔤',
-    background: 'theme-space',
+    title: 'Pendu du Capitaine',
+    description: 'Devine les mots mystère avant de lever l’ancre.',
+    icon: '⚓️',
+    background: 'theme-pirate-bay',
   },
   puzzle: {
-    title: 'Puzzle lettres & nombres',
-    description: 'Replace les lettres dans le bon ordre.',
-    icon: '🧩',
-    background: 'theme-farm',
+    title: 'Puzzle de la Carte',
+    description: 'Replace les lettres pour reconstituer la carte au trésor.',
+    icon: '🗺️',
+    background: 'theme-treasure-cove',
   },
 }
 
 export const challenges = [
   {
-    id: 'vitesse',
-    title: 'Turbovite',
-    description: 'Répondre à 5 questions en moins de 10 secondes chacune.',
-    reward: 'Badge vitesse',
+    id: 'decouverte',
+    title: 'Explorateur Tranquille',
+    description: 'Découvre les îles à ton rythme sans te presser.',
+    reward: 'Badge explorateur',
+    steps: [
+      'Étape 1 : terminer un module Lecture ou Écriture.',
+      'Étape 2 : ouvrir le menu mobile et lancer une nouvelle activité.',
+      'Étape 3 : gagner 3 trésors différents (Lecture, Écriture, Maths).',
+    ],
   },
   {
     id: 'precision',
-    title: 'Œil de lynx',
-    description: 'Obtenir 10 bonnes réponses d’affilée.',
+    title: 'Œil du Perroquet',
+    description: 'Reste attentif pour écrire les bons mots.',
     reward: 'Badge précision',
+    steps: [
+      'Étape 1 : réussir 4 réponses d’affilée.',
+      'Étape 2 : obtenir 80% de bonnes réponses sur un module.',
+      'Étape 3 : compléter un défi lettres sans erreur.',
+    ],
   },
   {
-    id: 'repetition',
-    title: 'Champion persévérant',
-    description: 'Rejouer le même module 3 fois.',
-    reward: 'Badge persévérance',
+    id: 'partage',
+    title: 'Équipage soudé',
+    description: 'Reviens souvent pour montrer tes progrès.',
+    reward: 'Badge camarade',
+    steps: [
+      'Étape 1 : rejouer un module un autre jour.',
+      'Étape 2 : consulter le tableau de bord pour voir tes scores.',
+      'Étape 3 : débloquer un badge supplémentaire.',
+    ],
   },
 ]

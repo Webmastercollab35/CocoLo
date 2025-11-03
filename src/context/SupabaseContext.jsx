@@ -1,9 +1,55 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { isSupabaseConfigured, supabase } from '../client'
 
-const supabaseUrl = 'https://iwgayloevgnizzqmybcb.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+const LEVEL_LABELS = {
+  cp: 'CP',
+  ce1: 'CE1',
+  ce2: 'CE2',
+  cm1: 'CM1',
+  cm2: 'CM2',
+}
+
+const DEFAULT_LEVEL = 'cp'
+
+const UPPERCASE_TO_CODE = Object.entries(LEVEL_LABELS).reduce((acc, [code, label]) => {
+  acc[label.toUpperCase()] = code
+  return acc
+}, {})
+
+export function normalizeLevel(value) {
+  if (value === undefined || value === null) {
+    return DEFAULT_LEVEL
+  }
+  const raw = value.toString().trim()
+  if (!raw) return DEFAULT_LEVEL
+  const lower = raw.toLowerCase()
+  if (LEVEL_LABELS[lower]) {
+    return lower
+  }
+  const upper = raw.toUpperCase()
+  if (UPPERCASE_TO_CODE[upper]) {
+    return UPPERCASE_TO_CODE[upper]
+  }
+  return DEFAULT_LEVEL
+}
+
+export function formatLevelForSupabase(value) {
+  const normalized = normalizeLevel(value)
+  return LEVEL_LABELS[normalized] ?? LEVEL_LABELS[DEFAULT_LEVEL]
+}
+
+export function getLevelLabel(value) {
+  const normalized = normalizeLevel(value)
+  return LEVEL_LABELS[normalized] ?? LEVEL_LABELS[DEFAULT_LEVEL]
+}
+
+const normalizeUserRecord = (record) => {
+  if (!record) return null
+  return {
+    ...record,
+    level: normalizeLevel(record.level),
+  }
+}
 
 const SupabaseContext = createContext(null)
 
@@ -14,7 +60,20 @@ export function SupabaseProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  const ensureConfigured = useCallback(() => {
+    if (isSupabaseConfigured) return null
+    const configurationError = new Error(
+      "Supabase n'est pas configuré. Ajoute SUPABASE_KEY (ou VITE_SUPABASE_KEY) pour activer la sauvegarde."
+    )
+    setError(configurationError)
+    return configurationError
+  }, [])
+
   const signUp = useCallback(async (payload) => {
+    const configurationError = ensureConfigured()
+    if (configurationError) {
+      throw configurationError
+    }
     setLoading(true)
     setError(null)
     try {
@@ -23,24 +82,29 @@ export function SupabaseProvider({ children }) {
         .insert({
           name: payload.name,
           age: payload.age,
-          level: payload.level,
+          level: formatLevelForSupabase(payload.level),
           avatar: payload.avatar,
         })
         .select()
         .single()
 
       if (upsertError) throw upsertError
-      setCurrentUser(data)
-      return data
+      const normalizedUser = normalizeUserRecord(data)
+      setCurrentUser(normalizedUser)
+      return normalizedUser
     } catch (err) {
       setError(err)
       throw err
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [ensureConfigured])
 
   const login = useCallback(async ({ name, avatar }) => {
+    const configurationError = ensureConfigured()
+    if (configurationError) {
+      throw configurationError
+    }
     setLoading(true)
     setError(null)
     try {
@@ -56,15 +120,16 @@ export function SupabaseProvider({ children }) {
       if (!data) {
         throw new Error('Profil introuvable, vérifie ton avatar ou inscris-toi !')
       }
-      setCurrentUser(data)
-      return data
+      const normalizedUser = normalizeUserRecord(data)
+      setCurrentUser(normalizedUser)
+      return normalizedUser
     } catch (err) {
       setError(err)
       throw err
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [ensureConfigured])
 
   const logout = useCallback(() => {
     setCurrentUser(null)
@@ -73,6 +138,9 @@ export function SupabaseProvider({ children }) {
 
   const fetchUserScores = useCallback(async (userId) => {
     if (!userId) return
+    if (!isSupabaseConfigured) {
+      return
+    }
     const { data, error: fetchError } = await supabase
       .from('scores')
       .select('*')
@@ -88,6 +156,10 @@ export function SupabaseProvider({ children }) {
   }, [])
 
   const fetchSiblingRivalry = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setRivalry([])
+      return
+    }
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, name, avatar, level')
@@ -98,7 +170,8 @@ export function SupabaseProvider({ children }) {
       return
     }
 
-    const userIds = users.map((user) => user.id)
+    const normalizedUsers = (users ?? []).map(normalizeUserRecord)
+    const userIds = normalizedUsers.map((user) => user.id)
     if (!userIds.length) {
       setRivalry([])
       return
@@ -114,8 +187,8 @@ export function SupabaseProvider({ children }) {
       return
     }
 
-    const grouped = users.map((user) => {
-      const userScores = results.filter((score) => score.user_id === user.id)
+    const grouped = normalizedUsers.map((user) => {
+      const userScores = (results ?? []).filter((score) => score.user_id === user.id)
       const total = userScores.reduce((acc, score) => acc + (score.score ?? 0), 0)
       const best = userScores.reduce((max, score) => Math.max(max, score.score ?? 0), 0)
       return {
@@ -131,6 +204,10 @@ export function SupabaseProvider({ children }) {
 
   const saveScore = useCallback(async (scorePayload) => {
     if (!currentUser) return
+    const configurationError = ensureConfigured()
+    if (configurationError) {
+      throw configurationError
+    }
     const { data, error: insertError } = await supabase
       .from('scores')
       .insert({
@@ -154,11 +231,25 @@ export function SupabaseProvider({ children }) {
 
     setScores((prev) => [data, ...prev])
     return data
-  }, [currentUser])
+  }, [currentUser, ensureConfigured])
 
   const value = useMemo(
     () => ({
       supabase,
+      currentUser,
+      scores,
+      rivalry,
+      loading,
+      error,
+      supabaseReady: isSupabaseConfigured,
+      signUp,
+      login,
+      logout,
+      fetchUserScores,
+      saveScore,
+      fetchSiblingRivalry,
+    }),
+    [
       currentUser,
       scores,
       rivalry,
@@ -170,15 +261,8 @@ export function SupabaseProvider({ children }) {
       fetchUserScores,
       saveScore,
       fetchSiblingRivalry,
-    }),
-    [currentUser, scores, rivalry, loading, error, signUp, login, logout, fetchUserScores, saveScore, fetchSiblingRivalry]
+    ]
   )
-
-  useEffect(() => {
-    if (!supabaseKey) {
-      console.warn('Supabase key manquante : ajoutez VITE_SUPABASE_KEY dans .env.local')
-    }
-  }, [])
 
   return <SupabaseContext.Provider value={value}>{children}</SupabaseContext.Provider>
 }

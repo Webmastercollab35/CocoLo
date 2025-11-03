@@ -36,7 +36,7 @@ function ResultsPage() {
             <p className="font-display text-3xl text-ocean">{accuracy}%</p>
           </div>
           <div className="rounded-3xl bg-white/80 p-6 shadow-inner">
-            <p className="text-sm font-semibold uppercase text-slate-500">Vitesse moyenne</p>
+            <p className="text-sm font-semibold uppercase text-slate-500">Temps moyen</p>
             <p className="font-display text-3xl text-candy">{averageSpeed}s</p>
           </div>
         </div>

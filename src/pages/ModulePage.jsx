@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import QuestionCard from '../components/QuestionCard'
 import ProgressBar from '../components/ProgressBar'
 import { getModuleQuestions, moduleMeta } from '../data/modules'
-import { useSupabase } from '../context/SupabaseContext'
+import { useSupabase, normalizeLevel } from '../context/SupabaseContext'
 import { useAudio } from '../context/AudioContext'
 
 function ModulePage() {
@@ -11,7 +11,7 @@ function ModulePage() {
   const navigate = useNavigate()
   const { currentUser, saveScore, scores } = useSupabase()
   const { playSound } = useAudio()
-  const level = currentUser?.level ?? 'cp'
+  const level = normalizeLevel(currentUser?.level)
   const questions = useMemo(() => getModuleQuestions(moduleId, level), [moduleId, level])
   const meta = moduleMeta[moduleId]
 
@@ -22,11 +22,10 @@ function ModulePage() {
   const [timeSpent, setTimeSpent] = useState(0)
   const [streak, setStreak] = useState(0)
   const [bestStreak, setBestStreak] = useState(0)
-  const [fastAnswers, setFastAnswers] = useState(0)
   const [timerKey, setTimerKey] = useState(0)
   const [questionStart, setQuestionStart] = useState(Date.now())
-  const [expired, setExpired] = useState(false)
   const responsesRef = useRef([])
+  const timeLimit = level === 'cp' ? 45 : 35
 
   const resetModuleState = useCallback(() => {
     setIndex(0)
@@ -36,10 +35,8 @@ function ModulePage() {
     setTimeSpent(0)
     setStreak(0)
     setBestStreak(0)
-    setFastAnswers(0)
     setTimerKey(0)
     setQuestionStart(Date.now())
-    setExpired(false)
     responsesRef.current = []
   }, [])
 
@@ -56,7 +53,6 @@ function ModulePage() {
     setIndex((prev) => Math.min(prev + 1, questions.length - 1))
     setTimerKey((key) => key + 1)
     setQuestionStart(Date.now())
-    setExpired(false)
   }, [questions.length])
 
   const finishModule = useCallback(
@@ -67,11 +63,11 @@ function ModulePage() {
       const accuracy = Math.round((correctCount / totalQuestions) * 100)
       const averageSpeed = Math.round((timeSpent + lastElapsed) / totalQuestions)
       const rewardBadges = []
-      if (bestStreak >= 3) rewardBadges.push('Badge précision')
-      if (fastAnswers >= 5) rewardBadges.push('Badge vitesse')
+      if (bestStreak >= 4) rewardBadges.push('Badge précision')
+      if (accuracy >= 80) rewardBadges.push('Badge explorateur')
       const previousAttempts = scores.filter((entry) => entry.module === moduleId).length
-      if (previousAttempts >= 2) {
-        rewardBadges.push('Badge persévérance')
+      if (previousAttempts >= 1) {
+        rewardBadges.push('Badge camarade')
       }
 
       await saveScore({
@@ -95,21 +91,24 @@ function ModulePage() {
         },
       })
     },
-    [bestStreak, fastAnswers, moduleId, navigate, questions.length, saveScore, score, scores, timeSpent]
+    [bestStreak, moduleId, navigate, questions.length, saveScore, score, scores, timeSpent]
   )
 
   const registerAnswer = useCallback(
     (value) => {
       if (!question || showCorrection) return
       const now = Date.now()
-      const elapsed = Math.min(30, Math.round((now - questionStart) / 1000))
-      const normalizedValue = (value ?? '').toString().trim().toLowerCase()
+      const elapsed = Math.min(timeLimit, Math.round((now - questionStart) / 1000))
+      const rawValue =
+        typeof value === 'string'
+          ? value
+          : typeof value === 'object' && value !== null && 'value' in value
+          ? value.value
+          : value ?? ''
+      const normalizedValue = rawValue.toString().trim().toLowerCase()
       const normalizedAnswer = question.answer.toString().trim().toLowerCase()
       const correct = normalizedValue === normalizedAnswer
-      const basePoints = correct ? 20 : 0
-      const speedBonus = correct ? Math.max(0, 10 - elapsed) : 0
-      const overtimePenalty = expired && correct ? -5 : 0
-      const gained = Math.max(0, basePoints + speedBonus + overtimePenalty)
+      const gained = correct ? 25 : 0
 
       setShowCorrection(true)
       setTimeSpent((prev) => prev + elapsed)
@@ -123,9 +122,6 @@ function ModulePage() {
           setBestStreak((best) => Math.max(best, next))
           return next
         })
-        if (elapsed <= 10) {
-          setFastAnswers((prev) => prev + 1)
-        }
       } else {
         playSound('error')
         setStreak(0)
@@ -139,12 +135,10 @@ function ModulePage() {
         }
       }, 1200)
     },
-    [question, showCorrection, questionStart, expired, playSound, index, questions.length, finishModule, goToNext]
+    [question, showCorrection, questionStart, timeLimit, playSound, index, questions.length, finishModule, goToNext]
   )
 
-  const handleTimerEnd = () => {
-    setExpired(true)
-  }
+  const handleTimerEnd = () => {}
 
   if (!meta) {
     return (
@@ -185,10 +179,11 @@ function ModulePage() {
         timerKey={timerKey}
         onTimerEnd={handleTimerEnd}
         level={level}
+        timeLimit={timeLimit}
       />
       <div className="card-surface flex flex-wrap items-center justify-between gap-4 p-6 text-sm text-slate-600">
         <div>
-          <p>Temps cumulé : <span className="font-semibold">{timeSpent}s</span></p>
+          <p>Temps passé : <span className="font-semibold">{timeSpent}s</span></p>
           <p>Meilleure série : <span className="font-semibold">{bestStreak}</span></p>
         </div>
         <div className="flex gap-3">

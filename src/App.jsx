@@ -10,6 +10,7 @@ import ResultsPage from './pages/ResultsPage'
 import { useSupabase } from './context/SupabaseContext'
 import { BackgroundMusicToggle } from './components/BackgroundMusicToggle'
 import MascotGuide from './components/MascotGuide'
+import MobileDock from './components/MobileDock'
 
 function RequireUser({ children }) {
   const { currentUser } = useSupabase()
@@ -22,7 +23,7 @@ function RequireUser({ children }) {
 function App() {
   const location = useLocation()
   const { currentUser, fetchUserScores } = useSupabase()
-  const [theme, setTheme] = useState('theme-ocean')
+  const [theme, setTheme] = useState('theme-pirate-bay')
 
   useEffect(() => {
     if (currentUser) {
@@ -38,9 +39,7 @@ function App() {
     <div className={themedClass}>
       <div className="min-h-screen pb-20">
         <BackgroundMusicToggle />
-        {currentUser && (
-          <MascotGuide onThemeChange={setTheme} />
-        )}
+        {currentUser && <MascotGuide onThemeChange={setTheme} />}
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<LandingPage />} />
@@ -80,6 +79,7 @@ function App() {
           </Routes>
         </AnimatePresence>
       </div>
+      <MobileDock />
     </div>
   )
 }

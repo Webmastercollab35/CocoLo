@@ -4,24 +4,24 @@ import { useAudio } from '../context/AudioContext'
 
 const mascots = [
   {
-    id: 'dragon',
-    name: 'Drago',
-    description: 'Gardien de la forêt magique',
-    theme: 'theme-forest',
+    id: 'capitaine-dragon',
+    name: 'Capitaine Dragon',
+    description: 'Gardien de la baie aux trésors',
+    theme: 'theme-pirate-bay',
     avatar: '/assets/avatars/dragon.svg',
   },
   {
-    id: 'robot',
-    name: 'Robo',
-    description: 'Explorateur de l’espace infini',
-    theme: 'theme-space',
+    id: 'navigatrice-stella',
+    name: 'Navigatrice Stella',
+    description: 'Elle trace la route vers les étoiles pirates',
+    theme: 'theme-coral-lagoon',
     avatar: '/assets/avatars/astronaute.svg',
   },
   {
-    id: 'hibou',
-    name: 'Houbi',
-    description: 'Guide de la clairière secrète',
-    theme: 'theme-jungle',
+    id: 'perroquet-ping',
+    name: 'Perroquet Ping',
+    description: 'Veilleur des criques secrètes',
+    theme: 'theme-treasure-cove',
     avatar: '/assets/avatars/pingouin.svg',
   },
 ]

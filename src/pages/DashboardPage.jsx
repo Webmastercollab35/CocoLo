@@ -2,13 +2,13 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import ScoreBoard from '../components/ScoreBoard'
 import ProgressBar from '../components/ProgressBar'
-import { useSupabase } from '../context/SupabaseContext'
+import { useSupabase, getLevelLabel } from '../context/SupabaseContext'
 import { moduleMeta, challenges } from '../data/modules'
 
 function StatCard({ title, value, description }) {
   return (
     <div className="card-surface flex flex-col gap-2 p-6 text-center">
-      <p className="text-sm font-semibold uppercase text-slate-500">{title}</p>
+      <p className="comic-label text-sm font-semibold uppercase text-slate-500">{title}</p>
       <p className="font-display text-4xl text-ocean">{value}</p>
       <p className="text-sm text-slate-500">{description}</p>
     </div>
@@ -34,7 +34,7 @@ function RivalryPanel({ rivalry }) {
               <img src={`/assets/avatars/${entry.user.avatar}.svg`} alt={entry.user.name} className="h-14 w-14" />
               <div>
                 <p className="text-lg font-semibold text-midnight">{entry.user.name}</p>
-                <p className="text-xs uppercase text-slate-400">{entry.user.level?.toUpperCase()}</p>
+                <p className="text-xs uppercase text-slate-400">{getLevelLabel(entry.user.level)}</p>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-3 text-center text-sm font-semibold text-slate-600">
@@ -123,9 +123,16 @@ function DashboardPage() {
           <h2 className="font-display text-2xl text-midnight">Mes défis</h2>
           <div className="grid gap-4">
             {challenges.map((challenge) => (
-              <div key={challenge.id} className="card-surface flex flex-col gap-2 p-4">
-                <p className="text-sm font-semibold uppercase text-slate-500">{challenge.title}</p>
+              <div key={challenge.id} className="card-surface flex flex-col gap-3 p-4">
+                <p className="comic-label text-sm font-semibold uppercase text-slate-500">{challenge.title}</p>
                 <p className="text-sm text-slate-600">{challenge.description}</p>
+                {challenge.steps && (
+                  <ul className="ml-4 list-disc text-left text-xs text-slate-500">
+                    {challenge.steps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ul>
+                )}
                 <span className="badge-chip w-max">{challenge.reward}</span>
               </div>
             ))}
