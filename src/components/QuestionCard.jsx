@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import classNames from 'classnames'
 import { useAudio } from '../context/AudioContext'
 import CountdownTimer from './CountdownTimer'
@@ -13,7 +13,20 @@ function QuestionCard({
   onTimerEnd,
   level,
 }) {
-  const { playSound } = useAudio()
+  const { playSound, narrate, stopNarration, isNarrating } = useAudio()
+
+  useEffect(() => {
+    stopNarration()
+    return () => {
+      stopNarration()
+    }
+  }, [question?.id, stopNarration])
+
+  useEffect(() => {
+    if (showCorrection) {
+      stopNarration()
+    }
+  }, [showCorrection, stopNarration])
 
   const answers = useMemo(() => {
     if (!question) return []
@@ -44,18 +57,19 @@ function QuestionCard({
         </div>
         <CountdownTimer duration={30} running={!showCorrection} keySeed={timerKey} onExpire={onTimerEnd} />
       </div>
-      {question.audio && (
-        <button
-          type="button"
-          className="button-secondary w-max"
-          onClick={() => {
-            const audio = new Audio(question.audio)
-            audio.play()
-          }}
-        >
-          🔊 Écouter la consigne
-        </button>
-      )}
+      <button
+        type="button"
+        className="button-secondary w-max"
+        onClick={() => {
+          if (isNarrating) {
+            stopNarration()
+          } else {
+            narrate({ src: question.audio, text: question.prompt })
+          }
+        }}
+      >
+        {isNarrating ? '⏹️ Arrêter la lecture' : '🔊 Écouter la consigne'}
+      </button>
       {question.image && (
         <img
           src={question.image}

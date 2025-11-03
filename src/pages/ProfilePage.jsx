@@ -10,7 +10,7 @@ const levels = [
 ]
 
 function ProfilePage({ onThemeChange }) {
-  const { signUp, login, loading } = useSupabase()
+  const { signUp, login, loading, supabaseReady, error: supabaseError } = useSupabase()
   const { playSound } = useAudio()
   const navigate = useNavigate()
   const [isSignup, setIsSignup] = useState(true)
@@ -23,6 +23,10 @@ function ProfilePage({ onThemeChange }) {
 
   const submit = async (event) => {
     event.preventDefault()
+    if (!supabaseReady) {
+      setMessage("Configuration Supabase manquante : demande à un parent d'ajouter la clé d'API avant de continuer.")
+      return
+    }
     try {
       if (isSignup) {
         await signUp({
@@ -38,8 +42,8 @@ function ProfilePage({ onThemeChange }) {
       }
       playSound('success')
       navigate('/carte')
-    } catch (error) {
-      setMessage(error.message)
+    } catch (err) {
+      setMessage(err.message)
     }
   }
 
@@ -118,11 +122,18 @@ function ProfilePage({ onThemeChange }) {
               <AvatarPicker selected={form.avatar} onChange={(value) => handleChange('avatar', value)} />
             </div>
           </div>
-          <button type="submit" className="button-primary text-lg" disabled={loading}>
+          <button type="submit" className="button-primary text-lg" disabled={loading || !supabaseReady}>
             {loading ? 'Chargement…' : 'En route !'}
           </button>
         </form>
-        {message && <p className="text-center text-sm font-semibold text-slate-600">{message}</p>}
+        {(!supabaseReady || message) && (
+          <p className="text-center text-sm font-semibold text-slate-600">
+            {message || "Connexion à Supabase indisponible pour le moment."}
+          </p>
+        )}
+        {supabaseError && supabaseReady && (
+          <p className="text-center text-xs text-red-600">{supabaseError.message}</p>
+        )}
       </div>
     </div>
   )

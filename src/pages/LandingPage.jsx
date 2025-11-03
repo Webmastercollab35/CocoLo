@@ -6,7 +6,9 @@ function LandingPage() {
     <div className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center gap-10 px-6 text-center">
       <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
         <span className="badge-chip">Nouvelle aventure éducative</span>
-        <h1 className="mt-6 font-display text-4xl text-ocean md:text-6xl">Max&Co, la galaxie d’apprentissage de Maxence & Corentin</h1>
+        <h1 className="mt-6 font-display text-4xl text-ocean md:text-6xl">
+          Max&Co, la galaxie d’apprentissage de Maxence & Corentin
+        </h1>
         <p className="mt-4 text-lg text-slate-600 md:text-xl">
           Explore une carte magique, débloque des zones et gagne des trophées en lisant, écrivant et calculant !
         </p>

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import QuestionCard from '../components/QuestionCard'
 import ProgressBar from '../components/ProgressBar'
 import { getModuleQuestions, moduleMeta } from '../data/modules'
-import { useSupabase } from '../context/SupabaseContext'
+import { useSupabase, normalizeLevel } from '../context/SupabaseContext'
 import { useAudio } from '../context/AudioContext'
 
 function ModulePage() {
@@ -11,7 +11,7 @@ function ModulePage() {
   const navigate = useNavigate()
   const { currentUser, saveScore, scores } = useSupabase()
   const { playSound } = useAudio()
-  const level = currentUser?.level ?? 'cp'
+  const level = normalizeLevel(currentUser?.level)
   const questions = useMemo(() => getModuleQuestions(moduleId, level), [moduleId, level])
   const meta = moduleMeta[moduleId]
 
