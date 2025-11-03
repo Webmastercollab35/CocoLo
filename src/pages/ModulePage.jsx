@@ -103,7 +103,13 @@ function ModulePage() {
       if (!question || showCorrection) return
       const now = Date.now()
       const elapsed = Math.min(30, Math.round((now - questionStart) / 1000))
-      const normalizedValue = (value ?? '').toString().trim().toLowerCase()
+      const rawValue =
+        typeof value === 'string'
+          ? value
+          : typeof value === 'object' && value !== null && 'value' in value
+          ? value.value
+          : value ?? ''
+      const normalizedValue = rawValue.toString().trim().toLowerCase()
       const normalizedAnswer = question.answer.toString().trim().toLowerCase()
       const correct = normalizedValue === normalizedAnswer
       const basePoints = correct ? 20 : 0
