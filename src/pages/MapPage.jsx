@@ -100,6 +100,29 @@ function MapPage({ onThemeChange }) {
           Voir tous mes scores
         </Link>
       </div>
+      <div className="card-surface flex flex-col gap-3 p-6 text-left">
+        <h2 className="font-display text-2xl text-midnight">Chemin de progression</h2>
+        <p className="text-sm text-slate-600">
+          Chaque île s’illumine quand tu gagnes des étoiles : commence par la Lecture des moussaillons, puis cap sur l’écriture et les maths avant les mini-jeux bonus.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {mapZones.map((zone) => {
+            const meta = moduleMeta[zone.id]
+            const isUnlocked = unlockedModules.has(zone.id)
+            return (
+              <span
+                key={`${zone.id}-trail`}
+                className={classNames('rounded-full px-4 py-2 text-sm font-semibold shadow-inner', {
+                  'bg-emerald-200 text-emerald-900': isUnlocked,
+                  'bg-slate-200 text-slate-500': !isUnlocked,
+                })}
+              >
+                {meta.icon} {meta.title}
+              </span>
+            )
+          })}
+        </div>
+      </div>
     </div>
   )
 }
