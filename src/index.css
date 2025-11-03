@@ -10,6 +10,65 @@ body {
   @apply font-body text-midnight;
 }
 
+.comic-label {
+  @apply tracking-[0.2em];
+}
+
+.pirate-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.pirate-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.25), transparent 55%);
+  pointer-events: none;
+}
+
+.bg-sand {
+  background: #f8f0db;
+}
+
+.pirate-build-area {
+  background: rgba(248, 240, 219, 0.85);
+  border: 2px dashed rgba(14, 116, 144, 0.2);
+}
+
+@keyframes coin-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+}
+
+.pirate-coin {
+  @apply rounded-full border-2 border-amber-500 bg-gradient-to-br from-amber-200 via-amber-100 to-amber-300 px-4 py-2 font-display text-lg text-amber-900 shadow-lg shadow-amber-200 transition;
+  animation: coin-bounce 3s infinite ease-in-out;
+}
+
+.pirate-coin:disabled {
+  @apply cursor-not-allowed;
+  animation-play-state: paused;
+}
+
+.pirate-token {
+  @apply inline-flex items-center justify-center rounded-xl bg-ocean/10 px-3 py-2 font-display text-xl text-ocean shadow;
+  transition: transform 0.2s ease;
+}
+
+.pirate-token:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+.comic-panel {
+  @apply border-4 border-amber-200;
+}
+
 .button-primary {
   @apply bg-ocean text-white font-semibold px-6 py-3 rounded-2xl shadow-lg shadow-sky-200 transition-transform transform hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-ocean/50;
 }
@@ -44,4 +103,16 @@ body {
 
 .theme-jungle {
   @apply bg-gradient-to-br from-lime-100 via-green-100 to-emerald-200;
+}
+
+.theme-pirate-bay {
+  @apply bg-gradient-to-br from-[#0f172a] via-[#1b3a4b] to-[#041f33] text-white;
+}
+
+.theme-coral-lagoon {
+  @apply bg-gradient-to-br from-[#f9dcc4] via-[#f7b267] to-[#f4845f];
+}
+
+.theme-treasure-cove {
+  @apply bg-gradient-to-br from-[#fff4d6] via-[#f6d365] to-[#fda085];
 }

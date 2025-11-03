@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import QuestionCard from '../components/QuestionCard'
 import ProgressBar from '../components/ProgressBar'
 import { getModuleQuestions, moduleMeta } from '../data/modules'
-import { useSupabase } from '../context/SupabaseContext'
+import { useSupabase, normalizeLevel } from '../context/SupabaseContext'
 import { useAudio } from '../context/AudioContext'
 
 function ModulePage() {
@@ -11,7 +11,7 @@ function ModulePage() {
   const navigate = useNavigate()
   const { currentUser, saveScore, scores } = useSupabase()
   const { playSound } = useAudio()
-  const level = currentUser?.level ?? 'cp'
+  const level = normalizeLevel(currentUser?.level)
   const questions = useMemo(() => getModuleQuestions(moduleId, level), [moduleId, level])
   const meta = moduleMeta[moduleId]
 
@@ -103,7 +103,13 @@ function ModulePage() {
       if (!question || showCorrection) return
       const now = Date.now()
       const elapsed = Math.min(30, Math.round((now - questionStart) / 1000))
-      const normalizedValue = (value ?? '').toString().trim().toLowerCase()
+      const rawValue =
+        typeof value === 'string'
+          ? value
+          : typeof value === 'object' && value !== null && 'value' in value
+          ? value.value
+          : value ?? ''
+      const normalizedValue = rawValue.toString().trim().toLowerCase()
       const normalizedAnswer = question.answer.toString().trim().toLowerCase()
       const correct = normalizedValue === normalizedAnswer
       const basePoints = correct ? 20 : 0

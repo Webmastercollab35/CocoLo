@@ -22,7 +22,7 @@ function RequireUser({ children }) {
 function App() {
   const location = useLocation()
   const { currentUser, fetchUserScores } = useSupabase()
-  const [theme, setTheme] = useState('theme-ocean')
+  const [theme, setTheme] = useState('theme-pirate-bay')
 
   useEffect(() => {
     if (currentUser) {
